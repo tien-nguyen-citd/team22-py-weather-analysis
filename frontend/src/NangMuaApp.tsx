@@ -53,7 +53,7 @@ export const NangMuaApp: React.FC = () => {
   const navigate = useNavigate();
   const routerLocation = useLocation();
   const queryClient = useQueryClient();
-  const archiveIsFetching = useIsFetching({ queryKey: ['archive'] });
+  const climateIsFetching = useIsFetching({ queryKey: ['climate'] });
   const locationsQuery = useLocations();
   const locations = locationsQuery.data ?? EMPTY_LOCATIONS;
 
@@ -179,10 +179,10 @@ export const NangMuaApp: React.FC = () => {
           currentPage={currentPage}
           onSelectPage={handleSelectPage}
           updatedAt={formatUpdatedAt(weatherData?.updatedAt)}
-          isFetching={isFetching || archiveIsFetching > 0}
+          isFetching={isFetching || climateIsFetching > 0}
           onRefresh={() => {
             void refetch();
-            void queryClient.invalidateQueries({ queryKey: ['archive'] });
+            void queryClient.invalidateQueries({ queryKey: ['climate'] });
           }}
         />
 

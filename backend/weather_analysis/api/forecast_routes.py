@@ -7,10 +7,8 @@ from weather_analysis.api.dependencies import (
 )
 from weather_analysis.api.schemas import LocationForecastResponse
 from weather_analysis.clients.open_meteo_client import WeatherProviderError
-from weather_analysis.services.forecast_service import (
-    LocationNotFoundError,
-    get_location_forecast,
-)
+from weather_analysis.services.forecast_service import get_location_forecast
+from weather_analysis.services.location_service import LocationNotFoundError
 
 
 router = APIRouter(prefix="/api/locations", tags=["forecast"])

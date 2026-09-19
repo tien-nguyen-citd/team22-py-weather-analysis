@@ -65,6 +65,18 @@ def clamp(value: float, minimum: float, maximum: float) -> float:
     return max(minimum, min(maximum, value))
 
 
+def calculate_tourism_score(temperature: float, rainy_days: int) -> int:
+    """Tính mức phù hợp để du lịch theo khí hậu trung bình tháng."""
+    if temperature < 20:
+        temperature_penalty = (20 - temperature) * 2.5
+    elif temperature > 28:
+        temperature_penalty = (temperature - 28) * 3.6
+    else:
+        temperature_penalty = 0
+    score = 100 - temperature_penalty - rainy_days * 2.2
+    return js_round(clamp(score, 8, 98))
+
+
 def pad(hour: int) -> str:
     return f"{hour:02d}:00"
 

@@ -31,7 +31,8 @@ def test_list_settings_returns_definitions_and_default(client: Client) -> None:
             "category": "Dự báo thời tiết",
             "title": "Thời gian lưu cache (phút)",
             "description": (
-                "Thời gian lưu kết quả dự báo từ Open-Meteo. Thay đổi chỉ "
+                "Thời gian lưu kết quả dự báo và nhiệt độ hiện tại từ "
+                "Open-Meteo. Thay đổi chỉ "
                 "áp dụng cho lần gọi Open-Meteo mới, không làm thay đổi thời "
                 "hạn của dữ liệu đã có trong cache."
             ),

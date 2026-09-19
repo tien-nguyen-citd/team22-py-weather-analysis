@@ -16,7 +16,7 @@ class WeatherProviderError(Exception):
 
 
 class ArchiveDaily(BaseModel):
-    time: list[str]
+    time: list[date]
     precipitation_sum: list[float | None]
     temperature_2m_mean: list[float | None]
 
@@ -158,7 +158,7 @@ class OpenMeteoClient:
                     "start_date": start_date.isoformat(),
                     "end_date": end_date.isoformat(),
                     "daily": "precipitation_sum,temperature_2m_mean",
-                    "timezone": "Asia/Bangkok",
+                    "timezone": "Asia/Ho_Chi_Minh",
                     "models": "era5",
                 },
                 timeout=45,

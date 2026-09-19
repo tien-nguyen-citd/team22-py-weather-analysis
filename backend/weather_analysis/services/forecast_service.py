@@ -11,7 +11,7 @@ from weather_analysis.clients.open_meteo_client import (
 )
 from weather_analysis.memory_cache import MemoryCache
 from weather_analysis.models import Location
-from weather_analysis.repositories.location_repository import LocationRepository
+from weather_analysis.services.location_service import get_location_by_slug
 from weather_analysis.services.scoring import (
     ActivityWindow,
     BestWindow,
@@ -45,10 +45,6 @@ VIETNAMESE_DAYS = (
     "Chủ Nhật",
 )
 ForecastCacheKey = tuple[float, float, date]
-
-
-class LocationNotFoundError(Exception):
-    """Không tìm thấy địa điểm theo slug."""
 
 
 class ForecastClient(Protocol):
@@ -123,9 +119,7 @@ def get_location_forecast(
     cache: MemoryCache[ForecastCacheKey, OpenMeteoForecast],
     now_factory: Callable[[], datetime] | None = None,
 ) -> LocationForecast:
-    location = LocationRepository(session).find_by_slug(slug)
-    if location is None:
-        raise LocationNotFoundError(slug)
+    location = get_location_by_slug(session, slug)
 
     now = (
         now_factory() if now_factory is not None else datetime.now(VIETNAM_TIMEZONE)

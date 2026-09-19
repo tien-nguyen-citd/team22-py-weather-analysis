@@ -78,7 +78,7 @@ Giá trị mà phiên bản hiện tại mang lại:
 - Dữ liệu ERA5 là **tái phân tích theo ô lưới**, không phải phép đo trực tiếp tại mọi địa điểm. Địa hình và thời tiết rất cục bộ có thể khác số hiển thị; biểu đồ hiện chưa thể hiện biên độ biến động giữa các năm của mốc 10 năm.
 - Giá trị cụ thể của cột nằm trong tooltip `title`, khó tiếp cận trên màn hình cảm ứng và khi dùng bàn phím. Số tổng và tỷ lệ cũng được tính từ lượng mưa tháng đã làm tròn, nên có thể lệch nhẹ so với phép tính trên số gốc.
 
-Các nhận xét về cách tính và giới hạn hiện tại được đối chiếu từ [mã xử lý dự báo](frontend/src/api/weatherApi.ts), [công thức chấm điểm](frontend/src/lib/scoring.ts), [mã xử lý khí hậu](frontend/src/api/climateApi.ts) và bốn trang trong [`frontend/src/pages`](frontend/src/pages). Thông tin về ERA5 tham khảo [tài liệu Open-Meteo Historical Weather API](https://open-meteo.com/en/docs/historical-weather-api).
+Các nhận xét về cách tính và giới hạn hiện tại được đối chiếu từ [nghiệp vụ dự báo](backend/weather_analysis/services/forecast_service.py), [công thức chấm điểm](backend/weather_analysis/services/scoring.py), [nghiệp vụ khí hậu](backend/weather_analysis/services/climate_service.py) và bốn trang trong [`frontend/src/pages`](frontend/src/pages). Thông tin về ERA5 tham khảo [tài liệu Open-Meteo Historical Weather API](https://open-meteo.com/en/docs/historical-weather-api).
 
 ## 3. Ứng dụng giải quyết vấn đề gì cho người dùng?
 

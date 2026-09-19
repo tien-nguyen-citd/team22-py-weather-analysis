@@ -1,3 +1,4 @@
+from datetime import date as Date
 from datetime import datetime
 
 from sqlalchemy import Index, String, Unicode, UnicodeText, func, text
@@ -55,3 +56,15 @@ class SystemSetting(Base):
     updated_at: Mapped[datetime] = mapped_column(
         DATETIME2, server_default=func.sysutcdatetime()
     )
+
+
+class DailyWeather(Base):
+    """Dữ liệu thời tiết lịch sử theo ngày tại một tọa độ."""
+
+    __tablename__ = "daily_weather"
+
+    latitude: Mapped[float] = mapped_column(primary_key=True)
+    longitude: Mapped[float] = mapped_column(primary_key=True)
+    date: Mapped[Date] = mapped_column(primary_key=True)
+    temperature_mean: Mapped[float]
+    precipitation_sum: Mapped[float]

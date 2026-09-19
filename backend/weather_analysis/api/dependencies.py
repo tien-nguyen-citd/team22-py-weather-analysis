@@ -1,5 +1,4 @@
 from collections.abc import Iterator
-from datetime import date
 from typing import Annotated
 
 import httpx
@@ -8,20 +7,19 @@ from sqlalchemy.orm import Session
 
 from weather_analysis.clients.open_meteo_client import (
     OpenMeteoClient,
-    OpenMeteoArchive,
     OpenMeteoForecast,
 )
 from weather_analysis.database import session_scope
 from weather_analysis.memory_cache import MemoryCache
 from weather_analysis.services.forecast_service import ForecastCacheKey
+from weather_analysis.services.current_temperature_service import (
+    TemperatureCacheKey,
+)
 
 
 _open_meteo_http_client = httpx.Client(timeout=10)
 _open_meteo_client = OpenMeteoClient(_open_meteo_http_client)
 _forecast_cache: MemoryCache[ForecastCacheKey, OpenMeteoForecast] = MemoryCache()
-ArchiveCacheKey = tuple[float, float, date, date]
-_archive_cache: MemoryCache[ArchiveCacheKey, OpenMeteoArchive] = MemoryCache()
-TemperatureCacheKey = tuple[tuple[str, float, float], ...]
 _temperature_cache: MemoryCache[TemperatureCacheKey, dict[str, float]] = MemoryCache()
 
 
@@ -50,10 +48,6 @@ def get_forecast_cache() -> MemoryCache[ForecastCacheKey, OpenMeteoForecast]:
     return _forecast_cache
 
 
-def get_archive_cache() -> MemoryCache[ArchiveCacheKey, OpenMeteoArchive]:
-    return _archive_cache
-
-
 def get_temperature_cache() -> MemoryCache[TemperatureCacheKey, dict[str, float]]:
     return _temperature_cache
 
@@ -64,10 +58,6 @@ WeatherClient = Annotated[OpenMeteoClient, Depends(get_open_meteo_client)]
 ForecastCache = Annotated[
     MemoryCache[ForecastCacheKey, OpenMeteoForecast],
     Depends(get_forecast_cache),
-]
-ArchiveCache = Annotated[
-    MemoryCache[ArchiveCacheKey, OpenMeteoArchive],
-    Depends(get_archive_cache),
 ]
 TemperatureCache = Annotated[
     MemoryCache[TemperatureCacheKey, dict[str, float]],

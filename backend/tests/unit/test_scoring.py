@@ -5,6 +5,7 @@ from weather_analysis.services.scoring import (
     calculate_day_score,
     calculate_factors,
     calculate_hourly_score,
+    calculate_tourism_score,
     get_day_verdict,
     get_day_why,
     get_rain_window,
@@ -122,3 +123,8 @@ def test_dynamic_weather_text_matches_existing_behavior() -> None:
 def test_js_round_rounds_half_toward_positive_infinity() -> None:
     assert js_round(2.5) == 3
     assert js_round(-1.5) == -1
+
+
+def test_calculate_tourism_score_matches_existing_rules() -> None:
+    assert calculate_tourism_score(25, 5) == 89
+    assert calculate_tourism_score(17, 6) == 79

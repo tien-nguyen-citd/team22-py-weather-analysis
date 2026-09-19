@@ -170,3 +170,58 @@ class LocationForecastResponse(CamelResponse):
     details: WeatherDetailsResponse
     daily7: list[DayForecastResponse]
     activities: list[ActivityWindowResponse]
+
+
+class HistoryMonthResponse(CamelResponse):
+    year: int
+    month: int
+    rain: int
+    baseline_rain: int
+
+
+class RainMonthInsightResponse(CamelResponse):
+    label: str
+    rain: int
+    rainy_days: int
+
+
+class TemperatureMonthInsightResponse(CamelResponse):
+    label: str
+    temperature: float
+
+
+class LocationHistoryResponse(CamelResponse):
+    location: LocationResponse
+    recent_period: str
+    baseline_period: str
+    months: list[HistoryMonthResponse]
+    total_rain: int
+    baseline_total_rain: int
+    rain_diff_percent: int
+    rain_comparison: str
+    wettest_month: RainMonthInsightResponse
+    hottest_month: TemperatureMonthInsightResponse
+    coolest_month: TemperatureMonthInsightResponse
+
+
+class MonthClimateResponse(CamelResponse):
+    month: int
+    temperature: float
+    rain: int
+    rainy_days: int
+    tourism_score: int
+
+
+class ComparedLocationResponse(CamelResponse):
+    location: LocationResponse
+    months: list[MonthClimateResponse]
+    summary: str
+
+
+class LocationComparisonResponse(CamelResponse):
+    month: int
+    baseline_period: str
+    a: ComparedLocationResponse
+    b: ComparedLocationResponse
+    conclusion: str
+    year_recommendation: str

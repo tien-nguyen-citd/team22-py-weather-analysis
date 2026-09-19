@@ -1,14 +1,9 @@
 import React, { useState, useMemo } from 'react';
-import { useQuery } from '@tanstack/react-query';
-import { fetchClimateArchive, getArchiveRange } from '../api/climateApi';
+import { keepPreviousData, useQuery } from '@tanstack/react-query';
+import { getLocationComparison } from '../api/climateApi';
 import { findLocationByName } from '../api/locations';
 import { ErrorMessage } from '../components/ErrorMessage';
-import {
-  getCompareSummary,
-  getCompareConclusion,
-  getYearRecommendation,
-  clamp,
-} from '../lib/scoring';
+import { clamp } from '../lib/scoring';
 import type { LocationItem } from '../types';
 
 interface ComparePageProps {
@@ -46,16 +41,15 @@ export const ComparePage: React.FC<ComparePageProps> = ({
     [cityBName, currentLocation, locations],
   );
 
-  const range = getArchiveRange();
-  const archiveQueryA = useQuery({
-    queryKey: ['archive', cityA.slug, range.endDate],
-    queryFn: ({ signal }) => fetchClimateArchive(cityA, range, signal),
-    staleTime: 30 * 60 * 1000,
-    retry: 1,
-  });
-  const archiveQueryB = useQuery({
-    queryKey: ['archive', cityB.slug, range.endDate],
-    queryFn: ({ signal }) => fetchClimateArchive(cityB, range, signal),
+  const comparisonQuery = useQuery({
+    queryKey: ['climate', 'compare', cityA.slug, cityB.slug, selectedMonth],
+    queryFn: ({ signal }) => getLocationComparison(
+      cityA.slug,
+      cityB.slug,
+      selectedMonth,
+      signal,
+    ),
+    placeholderData: keepPreviousData,
     staleTime: 30 * 60 * 1000,
     retry: 1,
   });
@@ -116,14 +110,12 @@ export const ComparePage: React.FC<ComparePageProps> = ({
     </div>
   );
 
-  const archiveA = archiveQueryA.data;
-  const archiveB = archiveQueryB.data;
-  if (!archiveA || !archiveB) {
-    const hasError = (!archiveA && archiveQueryA.isError) || (!archiveB && archiveQueryB.isError);
+  const comparison = comparisonQuery.data;
+  if (!comparison) {
     return (
       <div className="space-y-[16px] mt-[20px]">
         {controls}
-        {hasError ? (
+        {comparisonQuery.isError ? (
           <ErrorMessage
             title="Không tải được dữ liệu khí hậu"
             message={
@@ -133,7 +125,7 @@ export const ComparePage: React.FC<ComparePageProps> = ({
                 kết nối mạng và thử lại.
               </>
             }
-            onRetry={() => { void archiveQueryA.refetch(); void archiveQueryB.refetch(); }}
+            onRetry={() => { void comparisonQuery.refetch(); }}
           />
         ) : (
           <div className="space-y-[16px] animate-pulse" aria-label="Đang tải dữ liệu khí hậu">
@@ -149,35 +141,27 @@ export const ComparePage: React.FC<ComparePageProps> = ({
     );
   }
 
-  const monthsA = archiveA.months;
-  const monthsB = archiveB.months;
+  const monthsA = comparison.a.months;
+  const monthsB = comparison.b.months;
   const currentA = monthsA[selectedMonth - 1];
   const currentB = monthsB[selectedMonth - 1];
   const maxTemp = 34;
-  const maxRain = Math.max(120, currentA.r, currentB.r);
+  const maxRain = Math.max(120, currentA.rain, currentB.rain);
   const maxDays = 31;
-  const summaryA = getCompareSummary(cityA.name, selectedMonth, currentA.t, currentA.d, currentA.r, currentA.tourismScore);
-  const summaryB = getCompareSummary(cityB.name, selectedMonth, currentB.t, currentB.d, currentB.r, currentB.tourismScore);
-  const conclusion = getCompareConclusion(
-    selectedMonth,
-    { name: cityA.name, t: currentA.t, d: currentA.d, score: currentA.tourismScore },
-    { name: cityB.name, t: currentB.t, d: currentB.d, score: currentB.tourismScore }
-  );
   const scoresA = monthsA.map(m => m.tourismScore);
   const scoresB = monthsB.map(m => m.tourismScore);
-  const yearRecommendation = getYearRecommendation(cityA.name, scoresA, cityB.name, scoresB);
 
   return (
     <div className="space-y-[16px] mt-[20px]">
       {controls}
-      {(archiveQueryA.isError || archiveQueryB.isError) && (
+      {comparisonQuery.isError && (
         <p className="text-[12px] text-m2 px-[4px]">
           Chưa cập nhật được dữ liệu khí hậu; đang hiển thị bản đã lưu.{' '}
-          <button type="button" onClick={() => { void archiveQueryA.refetch(); void archiveQueryB.refetch(); }} className="text-acc underline focus-ring">Thử lại</button>
+          <button type="button" onClick={() => { void comparisonQuery.refetch(); }} className="text-acc underline focus-ring">Thử lại</button>
         </p>
       )}
       <p className="text-[12px] text-m3 px-[4px]">
-        Trung bình 10 năm trước {archiveA.recentPeriod} · Nguồn: <a href="https://open-meteo.com/en/docs/historical-weather-api" target="_blank" rel="noreferrer" className="underline hover:text-acc focus-ring">Open-Meteo ERA5</a>
+        Trung bình 10 năm trước ({comparison.baselinePeriod}) · Nguồn: <a href="https://open-meteo.com/en/docs/historical-weather-api" target="_blank" rel="noreferrer" className="underline hover:text-acc focus-ring">Open-Meteo ERA5</a>
       </p>
 
       {/* Hai thẻ điểm */}
@@ -194,7 +178,7 @@ export const ComparePage: React.FC<ComparePageProps> = ({
             </div>
           </div>
           <p className="text-[13.5px] leading-[1.6] opacity-86 mt-[16px] pretty-text">
-            {summaryA}
+            {comparison.a.summary}
           </p>
         </div>
 
@@ -210,7 +194,7 @@ export const ComparePage: React.FC<ComparePageProps> = ({
             </div>
           </div>
           <p className="text-[13.5px] leading-[1.6] text-ink2 mt-[16px] pretty-text">
-            {summaryB}
+            {comparison.b.summary}
           </p>
         </div>
       </div>
@@ -228,12 +212,12 @@ export const ComparePage: React.FC<ComparePageProps> = ({
               <span className="w-[104px] text-[13px] text-m1 truncate">{cityA.name}</span>
               <div className="flex-1 h-[16px] rounded-[8px] bg-track overflow-hidden">
                 <div
-                  style={{ width: `${clamp((currentA.t / maxTemp) * 100, 3, 100)}%` }}
+                  style={{ width: `${clamp((currentA.temperature / maxTemp) * 100, 3, 100)}%` }}
                   className="h-full bg-acc rounded-[8px] transition-all duration-300"
                 />
               </div>
               <span className="w-[66px] text-right font-nunito font-semibold text-[16px] text-ink">
-                {currentA.t}°C
+                {currentA.temperature}°C
               </span>
             </div>
 
@@ -241,12 +225,12 @@ export const ComparePage: React.FC<ComparePageProps> = ({
               <span className="w-[104px] text-[13px] text-m1 truncate">{cityB.name}</span>
               <div className="flex-1 h-[16px] rounded-[8px] bg-track overflow-hidden">
                 <div
-                  style={{ width: `${clamp((currentB.t / maxTemp) * 100, 3, 100)}%` }}
+                  style={{ width: `${clamp((currentB.temperature / maxTemp) * 100, 3, 100)}%` }}
                   className="h-full bg-dim rounded-[8px] transition-all duration-300"
                 />
               </div>
               <span className="w-[66px] text-right font-nunito font-semibold text-[16px] text-ink">
-                {currentB.t}°C
+                {currentB.temperature}°C
               </span>
             </div>
           </div>
@@ -263,12 +247,12 @@ export const ComparePage: React.FC<ComparePageProps> = ({
               <span className="w-[104px] text-[13px] text-m1 truncate">{cityA.name}</span>
               <div className="flex-1 h-[16px] rounded-[8px] bg-track overflow-hidden">
                 <div
-                  style={{ width: `${clamp((currentA.r / maxRain) * 100, 3, 100)}%` }}
+                  style={{ width: `${clamp((currentA.rain / maxRain) * 100, 3, 100)}%` }}
                   className="h-full bg-acc rounded-[8px] transition-all duration-300"
                 />
               </div>
               <span className="w-[66px] text-right font-nunito font-semibold text-[16px] text-ink">
-                {currentA.r} mm
+                {currentA.rain} mm
               </span>
             </div>
 
@@ -276,12 +260,12 @@ export const ComparePage: React.FC<ComparePageProps> = ({
               <span className="w-[104px] text-[13px] text-m1 truncate">{cityB.name}</span>
               <div className="flex-1 h-[16px] rounded-[8px] bg-track overflow-hidden">
                 <div
-                  style={{ width: `${clamp((currentB.r / maxRain) * 100, 3, 100)}%` }}
+                  style={{ width: `${clamp((currentB.rain / maxRain) * 100, 3, 100)}%` }}
                   className="h-full bg-dim rounded-[8px] transition-all duration-300"
                 />
               </div>
               <span className="w-[66px] text-right font-nunito font-semibold text-[16px] text-ink">
-                {currentB.r} mm
+                {currentB.rain} mm
               </span>
             </div>
           </div>
@@ -298,12 +282,12 @@ export const ComparePage: React.FC<ComparePageProps> = ({
               <span className="w-[104px] text-[13px] text-m1 truncate">{cityA.name}</span>
               <div className="flex-1 h-[16px] rounded-[8px] bg-track overflow-hidden">
                 <div
-                  style={{ width: `${clamp((currentA.d / maxDays) * 100, 3, 100)}%` }}
+                  style={{ width: `${clamp((currentA.rainyDays / maxDays) * 100, 3, 100)}%` }}
                   className="h-full bg-acc rounded-[8px] transition-all duration-300"
                 />
               </div>
               <span className="w-[66px] text-right font-nunito font-semibold text-[16px] text-ink">
-                {currentA.d} ngày
+                {currentA.rainyDays} ngày
               </span>
             </div>
 
@@ -311,12 +295,12 @@ export const ComparePage: React.FC<ComparePageProps> = ({
               <span className="w-[104px] text-[13px] text-m1 truncate">{cityB.name}</span>
               <div className="flex-1 h-[16px] rounded-[8px] bg-track overflow-hidden">
                 <div
-                  style={{ width: `${clamp((currentB.d / maxDays) * 100, 3, 100)}%` }}
+                  style={{ width: `${clamp((currentB.rainyDays / maxDays) * 100, 3, 100)}%` }}
                   className="h-full bg-dim rounded-[8px] transition-all duration-300"
                 />
               </div>
               <span className="w-[66px] text-right font-nunito font-semibold text-[16px] text-ink">
-                {currentB.d} ngày
+                {currentB.rainyDays} ngày
               </span>
             </div>
           </div>
@@ -324,7 +308,7 @@ export const ComparePage: React.FC<ComparePageProps> = ({
 
         {/* Kết luận so sánh */}
         <p className="text-[14.5px] text-ink2 leading-[1.65] mt-[20px] pretty-text">
-          {conclusion}
+          {comparison.conclusion}
         </p>
       </div>
 
@@ -400,7 +384,7 @@ export const ComparePage: React.FC<ComparePageProps> = ({
 
         {/* Câu khuyến nghị */}
         <p className="text-[14px] text-ink2 leading-[1.65] mt-[16px] pretty-text">
-          {yearRecommendation}
+          {comparison.yearRecommendation}
         </p>
       </div>
     </div>

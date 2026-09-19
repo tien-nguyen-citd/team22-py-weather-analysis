@@ -11,10 +11,10 @@ from weather_analysis.memory_cache import MemoryCache
 from weather_analysis.models import Location
 from weather_analysis.services.forecast_service import (
     ForecastCacheKey,
-    LocationNotFoundError,
     build_forecast,
     get_location_forecast,
 )
+from weather_analysis.services.location_service import LocationNotFoundError
 from weather_analysis.services.system_settings_service import (
     FORECAST_CACHE_DURATION,
     update_setting,

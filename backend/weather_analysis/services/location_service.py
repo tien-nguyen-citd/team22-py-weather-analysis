@@ -6,6 +6,17 @@ from weather_analysis.models import Location
 from weather_analysis.repositories.location_repository import LocationRepository
 
 
+class LocationNotFoundError(Exception):
+    """Không tìm thấy địa điểm theo slug."""
+
+
+def get_location_by_slug(session: Session, slug: str) -> Location:
+    location = LocationRepository(session).find_by_slug(slug)
+    if location is None:
+        raise LocationNotFoundError(slug)
+    return location
+
+
 def normalize_vietnamese(text: str) -> str:
     """Chuẩn hóa chữ thường và bỏ dấu tiếng Việt để tìm kiếm."""
     normalized = unicodedata.normalize("NFD", text.lower().replace("đ", "d"))

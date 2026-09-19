@@ -63,6 +63,8 @@ def test_fetch_archive_sends_era5_query_and_returns_daily_data() -> None:
     assert requests[0].url.params["end_date"] == "2026-08-31"
     assert requests[0].url.params["daily"] == "precipitation_sum,temperature_2m_mean"
     assert requests[0].url.params["models"] == "era5"
+    assert requests[0].url.params["timezone"] == "Asia/Ho_Chi_Minh"
+    assert archive.daily.time == [date(2026, 8, 30), date(2026, 8, 31)]
     assert archive.daily.precipitation_sum == [1.0, 2.0]
 
 
