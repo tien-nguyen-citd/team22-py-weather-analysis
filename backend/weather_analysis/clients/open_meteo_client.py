@@ -1,16 +1,36 @@
+import math
 from datetime import date, datetime, timedelta, timezone
 
 import httpx
-from pydantic import BaseModel, ConfigDict, Field, ValidationError
+from pydantic import BaseModel, ConfigDict, Field, TypeAdapter, ValidationError
 
 
 VIETNAM_TIMEZONE = timezone(timedelta(hours=7))
 FORECAST_URL = "https://api.open-meteo.com/v1/forecast"
 AIR_QUALITY_URL = "https://air-quality-api.open-meteo.com/v1/air-quality"
+ARCHIVE_URL = "https://archive-api.open-meteo.com/v1/archive"
 
 
 class WeatherProviderError(Exception):
     """Không thể lấy dữ liệu hợp lệ từ nhà cung cấp thời tiết."""
+
+
+class ArchiveDaily(BaseModel):
+    time: list[str]
+    precipitation_sum: list[float | None]
+    temperature_2m_mean: list[float | None]
+
+
+class OpenMeteoArchive(BaseModel):
+    daily: ArchiveDaily
+
+
+class _CurrentTemperature(BaseModel):
+    temperature_2m: float | None = None
+
+
+class _CurrentWeather(BaseModel):
+    current: _CurrentTemperature | None = None
 
 
 class _ForecastHourly(BaseModel):
@@ -84,6 +104,71 @@ class OpenMeteoForecast(BaseModel):
 class OpenMeteoClient:
     def __init__(self, http_client: httpx.Client) -> None:
         self._http_client = http_client
+
+    def fetch_current_temperatures(
+        self, locations: list[tuple[str, float, float]]
+    ) -> dict[str, float]:
+        temperatures: dict[str, float] = {}
+        for start in range(0, len(locations), 25):
+            batch = locations[start : start + 25]
+            try:
+                response = self._http_client.get(
+                    FORECAST_URL,
+                    params={
+                        "latitude": ",".join(str(item[1]) for item in batch),
+                        "longitude": ",".join(str(item[2]) for item in batch),
+                        "current": "temperature_2m",
+                        "timezone": "Asia/Bangkok",
+                    },
+                )
+                response.raise_for_status()
+                payload: object = response.json()
+                if len(batch) == 1 and isinstance(payload, dict):
+                    items = [_CurrentWeather.model_validate(payload)]
+                else:
+                    items = TypeAdapter(list[_CurrentWeather]).validate_python(
+                        payload
+                    )
+                if len(items) != len(batch):
+                    raise ValueError("Invalid current temperatures response")
+            except (httpx.HTTPError, ValidationError, ValueError) as error:
+                raise WeatherProviderError(
+                    "Không lấy được nhiệt độ hiện tại từ Open-Meteo"
+                ) from error
+
+            for (slug, _, _), item in zip(batch, items, strict=True):
+                value = item.current.temperature_2m if item.current is not None else None
+                if value is not None and math.isfinite(value):
+                    temperatures[slug] = value
+        return temperatures
+
+    def fetch_archive(
+        self,
+        latitude: float,
+        longitude: float,
+        start_date: date,
+        end_date: date,
+    ) -> OpenMeteoArchive:
+        try:
+            response = self._http_client.get(
+                ARCHIVE_URL,
+                params={
+                    "latitude": latitude,
+                    "longitude": longitude,
+                    "start_date": start_date.isoformat(),
+                    "end_date": end_date.isoformat(),
+                    "daily": "precipitation_sum,temperature_2m_mean",
+                    "timezone": "Asia/Bangkok",
+                    "models": "era5",
+                },
+                timeout=45,
+            )
+            response.raise_for_status()
+            return OpenMeteoArchive.model_validate(response.json())
+        except (httpx.HTTPError, ValidationError, ValueError) as error:
+            raise WeatherProviderError(
+                "Không lấy được dữ liệu lịch sử từ Open-Meteo"
+            ) from error
 
     def fetch_forecast(
         self,

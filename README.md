@@ -57,8 +57,11 @@ cd backend
 uvicorn weather_analysis.api.app:app --reload
 ```
 
-Backend cần kết nối Internet để lấy dữ liệu dự báo và chất lượng không khí từ
-Open-Meteo. Dữ liệu dự báo được cache trong bộ nhớ trong 30 phút.
+Backend cần kết nối Internet để lấy dữ liệu dự báo, chất lượng không khí, nhiệt
+độ các địa điểm và lịch sử khí hậu từ Open-Meteo. Hai tab So sánh và Lịch sử lấy
+dữ liệu khí hậu qua API backend `/api/locations/{slug}/climate`; ô chọn địa điểm
+lấy nhiệt độ qua `/api/locations/temperatures`. Dữ liệu dự báo và nhiệt độ được
+cache trong bộ nhớ 30 phút; dữ liệu lịch sử được cache 24 giờ.
 
 Khởi động frontend tại `http://localhost:5173` trong một terminal khác:
 

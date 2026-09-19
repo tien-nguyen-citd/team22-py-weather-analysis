@@ -42,8 +42,8 @@ export const LocationBar: React.FC<LocationBarProps> = ({
   const { data: pinnedLocations = [] } = usePinnedLocations();
 
   const { data: temperatures } = useQuery({
-    queryKey: ["location-temperatures"],
-    queryFn: ({ signal }) => fetchCurrentTemperatures(locations, signal),
+    queryKey: ["location-temperatures", locations],
+    queryFn: ({ signal }) => fetchCurrentTemperatures(signal),
     enabled: isOpen,
     staleTime: 30 * 60 * 1000,
     retry: 1,

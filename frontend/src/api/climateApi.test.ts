@@ -37,11 +37,11 @@ describe('climate archive', () => {
     }
 
     const fetchMock = vi.fn(async (url: string) => {
-      const params = new URL(url).searchParams;
+      const parsedUrl = new URL(url, 'http://localhost');
+      expect(parsedUrl.pathname).toBe('/api/locations/ha-noi/climate');
+      const params = parsedUrl.searchParams;
       expect(params.get('start_date')).toBe(range.startDate);
       expect(params.get('end_date')).toBe(range.endDate);
-      expect(params.get('models')).toBe('era5');
-      expect(params.get('daily')).toBe('precipitation_sum,temperature_2m_mean');
       return new Response(JSON.stringify({ daily: { time, precipitation_sum, temperature_2m_mean } }), { status: 200 });
     });
     vi.stubGlobal('fetch', fetchMock);

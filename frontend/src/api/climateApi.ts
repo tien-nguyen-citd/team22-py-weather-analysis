@@ -1,5 +1,6 @@
 import type { LocationItem } from '../types';
 import { calculateTourismScore } from '../lib/scoring';
+import { requestJson } from './client';
 
 export interface MonthlyClimate {
   month: number;
@@ -130,17 +131,13 @@ function aggregateDaily(daily: ArchiveDaily, range: ReturnType<typeof getArchive
 
 export async function fetchClimateArchive(location: LocationItem, range: ReturnType<typeof getArchiveRange>, signal?: AbortSignal): Promise<ClimateArchive> {
   const params = new URLSearchParams({
-    latitude: String(location.lat),
-    longitude: String(location.lon),
     start_date: range.startDate,
     end_date: range.endDate,
-    daily: 'precipitation_sum,temperature_2m_mean',
-    timezone: 'Asia/Bangkok',
-    models: 'era5',
   });
-  const response = await fetch(`https://archive-api.open-meteo.com/v1/archive?${params}`, { signal });
-  if (!response.ok) throw new Error(`Không tải được dữ liệu lịch sử: ${response.status}`);
-  const payload = await response.json();
+  const payload = await requestJson<{ daily: ArchiveDaily }>(
+    `/api/locations/${encodeURIComponent(location.slug)}/climate?${params}`,
+    { signal },
+  );
   return aggregateDaily(payload?.daily, range);
 }
 

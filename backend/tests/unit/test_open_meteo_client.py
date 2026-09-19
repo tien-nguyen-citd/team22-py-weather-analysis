@@ -1,3 +1,4 @@
+from datetime import date
 from typing import Any
 
 import httpx
@@ -33,6 +34,72 @@ def test_fetch_forecast_sends_expected_queries_and_parses_response(
     assert result.daily_time[0].isoformat() == "2026-09-19"
     assert result.us_aqi is not None
     assert result.us_aqi[14] == 58
+
+
+def test_fetch_archive_sends_era5_query_and_returns_daily_data() -> None:
+    requests: list[httpx.Request] = []
+
+    def handler(request: httpx.Request) -> httpx.Response:
+        requests.append(request)
+        return httpx.Response(
+            200,
+            json={
+                "daily": {
+                    "time": ["2026-08-30", "2026-08-31"],
+                    "precipitation_sum": [1.0, 2.0],
+                    "temperature_2m_mean": [25.0, 26.0],
+                }
+            },
+        )
+
+    with httpx.Client(transport=httpx.MockTransport(handler)) as http_client:
+        archive = OpenMeteoClient(http_client).fetch_archive(
+            21.0285, 105.8542, date(2015, 9, 1), date(2026, 8, 31)
+        )
+
+    assert len(requests) == 1
+    assert requests[0].url.host == "archive-api.open-meteo.com"
+    assert requests[0].url.params["start_date"] == "2015-09-01"
+    assert requests[0].url.params["end_date"] == "2026-08-31"
+    assert requests[0].url.params["daily"] == "precipitation_sum,temperature_2m_mean"
+    assert requests[0].url.params["models"] == "era5"
+    assert archive.daily.precipitation_sum == [1.0, 2.0]
+
+
+def test_fetch_archive_wraps_invalid_provider_response() -> None:
+    with httpx.Client(
+        transport=httpx.MockTransport(lambda _request: httpx.Response(200, json={}))
+    ) as http_client:
+        with pytest.raises(WeatherProviderError, match="dữ liệu lịch sử"):
+            OpenMeteoClient(http_client).fetch_archive(
+                21, 105, date(2015, 9, 1), date(2026, 8, 31)
+            )
+
+
+def test_fetch_current_temperatures_batches_locations() -> None:
+    requests: list[httpx.Request] = []
+
+    def handler(request: httpx.Request) -> httpx.Response:
+        requests.append(request)
+        latitudes = request.url.params["latitude"].split(",")
+        assert len(latitudes) <= 25
+        assert request.url.params["current"] == "temperature_2m"
+        items = [
+            {"current": {"temperature_2m": float(latitude)}}
+            for latitude in latitudes
+        ]
+        return httpx.Response(200, json=items if len(items) > 1 else items[0])
+
+    locations = [(f"place-{index}", float(index), 105.0) for index in range(51)]
+    with httpx.Client(transport=httpx.MockTransport(handler)) as http_client:
+        temperatures = OpenMeteoClient(http_client).fetch_current_temperatures(
+            locations
+        )
+
+    assert len(requests) == 3
+    assert temperatures == {
+        f"place-{index}": float(index) for index in range(51)
+    }
 
 
 def test_fetch_forecast_wraps_http_error() -> None:
