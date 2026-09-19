@@ -7,6 +7,9 @@ import { useLocations, usePinnedLocations } from "../hooks/useLocations";
 import { buildLocationChips } from "../lib/locationChips";
 import type { LocationItem } from "../types";
 
+const SEARCH_DEBOUNCE_DELAY_MS = 100;
+const SEARCH_MAX_DELAY_MS = 500;
+
 interface LocationBarProps {
   currentLocation: LocationItem;
   locations: LocationItem[];
@@ -35,7 +38,11 @@ export const LocationBar: React.FC<LocationBarProps> = ({
   const previousCurrentSlugRef = useRef<string | null>(null);
   const [scrollEdges, setScrollEdges] = useState({ left: false, right: false });
 
-  const debouncedQuery = useDebouncedValue(query, 250);
+  const debouncedQuery = useDebouncedValue(
+    query,
+    SEARCH_DEBOUNCE_DELAY_MS,
+    SEARCH_MAX_DELAY_MS,
+  );
   const { data: filteredLocations = [], isFetching } = useLocations(
     debouncedQuery.trim(),
   );
