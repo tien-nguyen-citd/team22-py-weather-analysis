@@ -65,6 +65,7 @@ def test_build_forecast_uses_fixed_time_and_vietnamese_day_labels(
     assert result.details.aqi == 58
     assert result.details.sunshine_hours == 7.2
     assert result.details.rain_window == "14:00 – 17:00"
+    assert all(window.start >= 14 for window in result.best_windows)
     assert [day.day_label for day in result.daily7[:3]] == [
         "Hôm nay",
         "Chủ Nhật",
@@ -82,6 +83,34 @@ def test_build_forecast_keeps_aqi_null_when_provider_has_no_air_quality(
 
     assert result.details.aqi is None
     assert result.details.aqi_label is None
+
+
+def test_build_forecast_keeps_zero_sunshine_duration(
+    raw_forecast: OpenMeteoForecast,
+) -> None:
+    forecast_without_sunshine = raw_forecast.model_copy(
+        update={"daily_sunshine_duration": [0.0] * 7}
+    )
+
+    result = build_forecast(
+        make_location(), forecast_without_sunshine, fixed_now()
+    )
+
+    assert result.details.sunshine_hours == 0
+
+
+def test_build_forecast_keeps_sunshine_null_when_provider_has_no_data(
+    raw_forecast: OpenMeteoForecast,
+) -> None:
+    forecast_without_sunshine = raw_forecast.model_copy(
+        update={"daily_sunshine_duration": [None] * 7}
+    )
+
+    result = build_forecast(
+        make_location(), forecast_without_sunshine, fixed_now()
+    )
+
+    assert result.details.sunshine_hours is None
 
 
 def test_two_calls_for_same_location_only_fetch_once(

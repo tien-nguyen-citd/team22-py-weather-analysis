@@ -104,19 +104,25 @@ export const OverviewPage: React.FC<OverviewPageProps> = ({ data }) => {
 
             {/* Hai khung giờ tốt nhất */}
             <div className="flex items-start gap-[28px] mt-[22px] flex-wrap">
-              {data.bestWindows.map((win, idx) => (
-                <div key={idx} className="space-y-[2px]">
-                  <span className="block uppercase text-[11px] opacity-75 tracking-[0.05em] font-medium">
-                    {win.tag}
-                  </span>
-                  <span className="font-nunito text-[24px] block font-normal">
-                    {win.range}
-                  </span>
-                  <span className="block text-[12px] opacity-85">
-                    {win.score} / 100 · {win.note}
-                  </span>
-                </div>
-              ))}
+              {data.bestWindows.length === 0 ? (
+                <p className="text-[13.5px] opacity-90">
+                  Hôm nay không còn khung giờ phù hợp
+                </p>
+              ) : (
+                data.bestWindows.map((win) => (
+                  <div key={win.range} className="space-y-[2px]">
+                    <span className="block uppercase text-[11px] opacity-75 tracking-[0.05em] font-medium">
+                      {win.tag}
+                    </span>
+                    <span className="font-nunito text-[24px] block font-normal">
+                      {win.range}
+                    </span>
+                    <span className="block text-[12px] opacity-85">
+                      {win.score} / 100 · {win.note}
+                    </span>
+                  </div>
+                ))
+              )}
             </div>
           </div>
 
@@ -262,7 +268,9 @@ export const OverviewPage: React.FC<OverviewPageProps> = ({ data }) => {
                   Giờ có nắng
                 </span>
                 <span className="font-nunito font-semibold text-[20px] text-ink mt-[2px] block">
-                  {data.details.sunshineHours}h
+                  {data.details.sunshineHours === null
+                    ? "—"
+                    : `${data.details.sunshineHours}h`}
                 </span>
               </div>
 
@@ -294,7 +302,7 @@ export const OverviewPage: React.FC<OverviewPageProps> = ({ data }) => {
                 <span className="block uppercase text-[11px] text-m3 tracking-[0.09em] font-medium">
                   Khung giờ mưa
                 </span>
-                <span className="font-nunito font-semibold text-[20px] text-ink mt-[2px] block truncate">
+                <span className="font-nunito font-semibold text-[20px] text-ink mt-[2px] block">
                   {data.details.rainWindow}
                 </span>
               </div>

@@ -28,10 +28,8 @@ Giá trị mà phiên bản hiện tại mang lại:
 
 **Nhược điểm**
 
-- Phần “Bốn yếu tố được chấm riêng rồi cộng lại” chưa khớp phép tính: điểm ngày hiện là trung bình điểm theo giờ dựa trên **nhiệt độ, khả năng mưa và UV**; gió và độ ẩm chỉ được thể hiện trong phần giải thích riêng. Điều này có thể làm người dùng hiểu sai nguồn gốc điểm.
-- Mô tả điều kiện và “khung giờ mưa” được suy ra bằng quy tắc đơn giản. Ví dụ, câu “chiều có mưa rào” không kiểm tra mưa có thực sự rơi vào buổi chiều; khung giờ mưa lấy từ giờ đầu đến giờ cuối vượt ngưỡng nên có thể bao gồm khoảng khô ở giữa.
-- Gợi ý giờ tốt vẫn có thể là giờ đã qua. Khi không tìm được khung giờ đạt ngưỡng, hệ thống vẫn trả về 06:00–08:00, dù điểm của khoảng đó có thể thấp.
-- Khi thiếu dữ liệu, một số giá trị mặc định vẫn hiện như số thật: AQI có thể trở thành 45 nếu API không khí lỗi; số giờ nắng bằng 0 có thể thành 8 giờ. Đây là nhược điểm cần ưu tiên sửa vì ảnh hưởng đến độ tin cậy.
+- Mô tả điều kiện được suy ra bằng quy tắc đơn giản. Ví dụ, câu “chiều có mưa rào” không kiểm tra mưa có thực sự rơi vào buổi chiều.
+- Khi thiếu dữ liệu, một số giá trị mặc định vẫn hiện như số thật, chẳng hạn nhiệt độ, độ ẩm, gió và điểm sương. Đây là nhược điểm cần ưu tiên sửa vì ảnh hưởng đến độ tin cậy.
 
 ### 2.2. Khung giờ tốt
 
@@ -44,8 +42,6 @@ Giá trị mà phiên bản hiện tại mang lại:
 **Nhược điểm**
 
 - Hiện chỉ phân tích **hôm nay** và bốn hoạt động cố định; chưa chọn được ngày khác hoặc điều chỉnh sở thích cá nhân.
-- Dòng giới thiệu nói nhiệt độ, mưa, **gió** và UV được chấm chung, nhưng công thức điểm theo giờ hiện không dùng gió. Người dùng có thể đánh giá quá cao mức độ phản ánh thực tế của điểm số.
-- Khung giờ đã qua vẫn có thể xuất hiện. Ngoài ra, hàm chọn hoạt động lấy khung giờ đầu tiên trong hai khung giờ tốt đã được sắp theo thời gian, nên kết quả hiển thị chưa chắc là khung giờ có điểm cao nhất.
 - Một số quy tắc mới là xấp xỉ: “giờ vàng” chụp ảnh dùng mốc 07:00/17:00 cố định thay vì giờ mặt trời mọc/lặn tại địa điểm; gợi ý phơi quần áo chưa dùng độ ẩm dù ghi chú nói cần độ ẩm thấp.
 - Chi tiết của cột giờ chủ yếu xuất hiện khi rê chuột, nên khó xem trên thiết bị cảm ứng và khi dùng bàn phím.
 

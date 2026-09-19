@@ -107,11 +107,12 @@ def best_runs(
     hours: list[HourData],
     score_of: Callable[[HourData], int],
     minimum: int,
+    from_hour: int = 6,
 ) -> list[Run]:
     scores = [score_of(hour) for hour in hours]
     candidates: list[_Candidate] = []
     for length in range(3, 1, -1):
-        for start in range(6, 20 - length):
+        for start in range(max(6, from_hour), 20 - length):
             segment = scores[start : start + length]
             if any(score < minimum for score in segment):
                 continue
@@ -164,7 +165,10 @@ def get_quality_note(score: int) -> str:
     return "tạm ổn"
 
 
-def get_best_windows(hours: list[HourData]) -> list[BestWindow]:
+def get_best_windows(
+    hours: list[HourData],
+    from_hour: int = 6,
+) -> list[BestWindow]:
     runs = best_runs(
         hours,
         lambda hour: hour.score
@@ -173,29 +177,10 @@ def get_best_windows(hours: list[HourData]) -> list[BestWindow]:
             hour.temp, hour.rain_prob, hour.uv, hour.hour
         ),
         55,
+        from_hour,
     )
     if not runs:
-        if len(hours) > 6:
-            fallback_score = hours[6].score
-            if fallback_score is None:
-                fallback_score = calculate_hourly_score(
-                    hours[6].temp,
-                    hours[6].rain_prob,
-                    hours[6].uv,
-                    6,
-                )
-        else:
-            fallback_score = 50
-        return [
-            BestWindow(
-                range=f"{pad(6)} – {pad(8)}",
-                score=fallback_score,
-                start=6,
-                len=2,
-                tag="Sáng sớm",
-                note=get_quality_note(fallback_score),
-            )
-        ]
+        return []
     return [
         BestWindow(
             range=run.range,
@@ -284,7 +269,10 @@ def score_drying(hour: HourData) -> int:
     return int(clamp(js_round(score), 0, 99))
 
 
-def calculate_activity_windows(hours: list[HourData]) -> list[ActivityWindow]:
+def calculate_activity_windows(
+    hours: list[HourData],
+    from_hour: int = 6,
+) -> list[ActivityWindow]:
     configs: list[tuple[str, str, str, Callable[[HourData], int]]] = [
         ("running", "Chạy bộ", "Cần mát, khô, ít tia UV", score_running),
         (
@@ -308,14 +296,14 @@ def calculate_activity_windows(hours: list[HourData]) -> list[ActivityWindow]:
     ]
     activities: list[ActivityWindow] = []
     for activity_id, name, note, scorer in configs:
-        runs = best_runs(hours, scorer, 45)
+        runs = best_runs(hours, scorer, 45, from_hour)
         if not runs:
             activities.append(
                 ActivityWindow(
                     activity_id,
                     name,
                     4,
-                    "Không có khung giờ phù hợp",
+                    "Hôm nay không còn khung giờ phù hợp",
                     note,
                     False,
                 )
@@ -390,7 +378,23 @@ def get_rain_window(hours: list[HourData]) -> str:
     wet_hours = [hour for hour in hours if hour.rain_prob >= 45]
     if not wet_hours:
         return "không mưa"
-    return f"{pad(wet_hours[0].hour)} – {pad(wet_hours[-1].hour + 1)}"
+
+    ranges: list[tuple[int, int]] = []
+    start = wet_hours[0].hour
+    end = start + 1
+    for hour in wet_hours[1:]:
+        if hour.hour == end:
+            end += 1
+            continue
+        ranges.append((start, end))
+        start = hour.hour
+        end = start + 1
+    ranges.append((start, end))
+
+    return ", ".join(
+        f"{pad(start_hour)} – {pad(end_hour)}"
+        for start_hour, end_hour in ranges
+    )
 
 
 def get_weather_condition(rain_prob: int, uv: float, rain_sum: float) -> str:

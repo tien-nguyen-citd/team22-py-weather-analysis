@@ -70,7 +70,7 @@ class ForecastLocation:
 class WeatherDetails:
     sunrise: str
     sunset: str
-    sunshine_hours: float
+    sunshine_hours: float | None
     aqi: int | None
     aqi_label: str | None
     rain_sum: float
@@ -149,8 +149,10 @@ def build_forecast(
     details = WeatherDetails(
         sunrise=_time_part(raw.daily_sunrise[0], "06:00"),
         sunset=_time_part(raw.daily_sunset[0], "18:00"),
-        sunshine_hours=_round_one(
-            (raw.daily_sunshine_duration[0] or 28800) / 3600
+        sunshine_hours=(
+            _round_one(raw.daily_sunshine_duration[0] / 3600)
+            if raw.daily_sunshine_duration[0] is not None
+            else None
         ),
         aqi=aqi,
         aqi_label=get_aqi_label(aqi) if aqi is not None else None,
@@ -192,7 +194,7 @@ def build_forecast(
             hourly,
             now_data.uv,
         ),
-        best_windows=get_best_windows(hourly),
+        best_windows=get_best_windows(hourly, current_hour),
         hourly=hourly,
         factors=calculate_factors(
             now_data.temp,
@@ -203,7 +205,7 @@ def build_forecast(
         ),
         details=details,
         daily7=daily7,
-        activities=calculate_activity_windows(hourly),
+        activities=calculate_activity_windows(hourly, current_hour),
     )
 
 

@@ -29,7 +29,7 @@ export interface FactorItem {
 export interface WeatherDetails {
   sunrise: string
   sunset: string
-  sunshineHours: number
+  sunshineHours: number | null
   aqi: number | null
   aqiLabel: string | null
   rainSum: number

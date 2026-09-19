@@ -10,7 +10,6 @@
     "pydantic",
     "pytest",
     "pyright",
-    "recharts",
     "slowmo",
     "sqlite",
     "tsx",

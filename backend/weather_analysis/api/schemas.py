@@ -123,7 +123,7 @@ class FactorResponse(CamelResponse):
 class WeatherDetailsResponse(CamelResponse):
     sunrise: str
     sunset: str
-    sunshine_hours: float
+    sunshine_hours: float | None
     aqi: int | None
     aqi_label: str | None
     rain_sum: float

@@ -6,6 +6,7 @@ from weather_analysis.services.scoring import (
     calculate_factors,
     calculate_hourly_score,
     calculate_tourism_score,
+    get_best_windows,
     get_day_verdict,
     get_day_why,
     get_rain_window,
@@ -66,6 +67,21 @@ def test_best_runs_finds_two_non_overlapping_windows() -> None:
     ]
 
 
+def test_best_windows_ignore_hours_before_requested_hour() -> None:
+    hours = [make_hour(hour, score=90) for hour in range(24)]
+
+    windows = get_best_windows(hours, 14)
+
+    assert windows
+    assert all(window.start >= 14 for window in windows)
+
+
+def test_best_windows_are_empty_when_no_window_reaches_threshold() -> None:
+    hours = [make_hour(hour, score=30) for hour in range(24)]
+
+    assert get_best_windows(hours, 6) == []
+
+
 def test_calculate_factors_matches_existing_labels_and_notes() -> None:
     factors = calculate_factors(28, 6.4, 70, 74, 15)
 
@@ -100,6 +116,18 @@ def test_activity_uses_highest_scoring_window_not_earliest_window() -> None:
     assert running.score == 99
 
 
+def test_activity_has_no_window_when_no_time_remains() -> None:
+    hours = [make_hour(hour) for hour in range(24)]
+
+    activities = calculate_activity_windows(hours, 18)
+
+    assert all(not activity.has_window for activity in activities)
+    assert all(
+        activity.range == "Hôm nay không còn khung giờ phù hợp"
+        for activity in activities
+    )
+
+
 def test_dynamic_weather_text_matches_existing_behavior() -> None:
     hours = [
         make_hour(14, temp=28, rain_prob=60, uv=9),
@@ -118,6 +146,19 @@ def test_dynamic_weather_text_matches_existing_behavior() -> None:
     assert "Nhiều mây. Độ ẩm 75%, gió 12 km/h." in why
     assert "Khả năng mưa cao nhất khoảng 15:00 (70%)" in why
     assert "Tia UV ở mức có hại" in why
+
+
+def test_rain_window_separates_non_consecutive_periods() -> None:
+    hours = [
+        make_hour(5, rain_prob=60),
+        make_hour(6, rain_prob=50),
+        make_hour(7, rain_prob=10),
+        make_hour(14, rain_prob=45),
+        make_hour(15, rain_prob=70),
+        make_hour(16, rain_prob=50),
+    ]
+
+    assert get_rain_window(hours) == "05:00 – 07:00, 14:00 – 17:00"
 
 
 def test_js_round_rounds_half_toward_positive_infinity() -> None:
