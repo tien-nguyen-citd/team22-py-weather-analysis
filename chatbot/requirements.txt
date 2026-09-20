@@ -1,0 +1,8 @@
+numpy==2.5.3
+psutil==7.2.2
+huggingface_hub==1.32.0
+model2vec==0.9.0
+fastembed==0.8.0
+gliner==0.2.29
+transformers==5.16.1
+torch==2.14.0
