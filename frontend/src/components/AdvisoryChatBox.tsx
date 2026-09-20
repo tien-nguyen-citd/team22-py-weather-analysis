@@ -8,12 +8,6 @@ const SAMPLE_QUESTIONS = [
   'Sang năm cắm trại ở Đà Lạt vào tháng nào thì ít mưa?',
 ];
 
-const STEPS = [
-  'Lấy ra địa điểm, khoảng thời gian và hoạt động từ câu hỏi.',
-  'Chấm điểm từng khoảng theo lịch sử khí hậu 10 năm.',
-  'Trả về hai thời điểm đáng cân nhắc, kèm số liệu và lý do.',
-];
-
 interface AdvisoryChatBoxProps {
   activities: ActivityProfile[];
   isAsking: boolean;
@@ -107,24 +101,7 @@ export function AdvisoryChatBox({
         </form>
       </section>
 
-      <div className="grid gap-4 lg:grid-cols-3">
-        <section
-          aria-label="Câu hỏi được xử lý thế nào"
-          className="rounded-[20px] border border-border bg-card p-5 sm:p-6"
-        >
-          <h2 className="font-nunito text-[15.5px] font-bold">Câu hỏi được xử lý thế nào</h2>
-          <ol className="mt-3.5 space-y-3.5">
-            {STEPS.map((step, index) => (
-              <li key={step} className="flex items-start gap-3">
-                <span className="mt-0.5 flex h-[22px] w-[22px] shrink-0 items-center justify-center rounded-full bg-acc-soft font-nunito text-[11.5px] font-extrabold text-acc">
-                  {index + 1}
-                </span>
-                <span className="text-[13px] leading-relaxed text-ink2">{step}</span>
-              </li>
-            ))}
-          </ol>
-        </section>
-
+      <div className="grid gap-4 lg:grid-cols-2">
         <section
           aria-label="Hoạt động được tư vấn"
           className="rounded-[20px] border border-border bg-card p-5 sm:p-6"
@@ -140,9 +117,6 @@ export function AdvisoryChatBox({
               </span>
             ))}
           </div>
-          <p className="mt-3 text-[12.5px] leading-relaxed text-m1">
-            Không nêu hoạt động thì dùng nhu cầu chung.
-          </p>
         </section>
 
         <section
