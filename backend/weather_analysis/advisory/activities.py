@@ -62,8 +62,8 @@ ACTIVITY_PROFILES = (
         "Tắm biển",
         0.6,
         0.4,
-        25,
-        31,
+        28,
+        34,
         "Ưu tiên ít mưa và nhiệt độ trung bình ngày 25–31°C; chưa đánh giá sóng, gió.",
     ),
     ActivityProfile(

@@ -12,6 +12,7 @@ import { OverviewPage } from './pages/OverviewPage';
 import { PlannerPage } from './pages/PlannerPage';
 import { ComparePage } from './pages/ComparePage';
 import { HistoryPage } from './pages/HistoryPage';
+import { AdvisoryPage } from './pages/AdvisoryPage';
 import { WeatherSkeleton } from './components/WeatherSkeleton';
 import { ErrorMessage } from './components/ErrorMessage';
 import {
@@ -54,6 +55,7 @@ export const NangMuaApp: React.FC = () => {
   const routerLocation = useLocation();
   const queryClient = useQueryClient();
   const climateIsFetching = useIsFetching({ queryKey: ['climate'] });
+  const advisoryIsFetching = useIsFetching({ queryKey: ['advisory'] });
   const locationsQuery = useLocations();
   const locations = locationsQuery.data ?? EMPTY_LOCATIONS;
 
@@ -64,7 +66,7 @@ export const NangMuaApp: React.FC = () => {
   );
 
   // Selected tab
-  const validPages: PageTab[] = ['tong-quan', 'khung-gio', 'so-sanh', 'lich-su'];
+  const validPages: PageTab[] = ['tong-quan', 'khung-gio', 'so-sanh', 'lich-su', 'tu-van'];
   const currentPage: PageTab = validPages.includes(page as PageTab)
     ? (page as PageTab)
     : 'tong-quan';
@@ -178,11 +180,12 @@ export const NangMuaApp: React.FC = () => {
         <Header
           currentPage={currentPage}
           onSelectPage={handleSelectPage}
-          updatedAt={formatUpdatedAt(weatherData?.updatedAt)}
-          isFetching={isFetching || climateIsFetching > 0}
+          updatedAt={currentPage === 'tu-van' ? 'Tư vấn từ lịch sử khí hậu' : formatUpdatedAt(weatherData?.updatedAt)}
+          isFetching={isFetching || climateIsFetching > 0 || advisoryIsFetching > 0}
           onRefresh={() => {
             void refetch();
             void queryClient.invalidateQueries({ queryKey: ['climate'] });
+            void queryClient.invalidateQueries({ queryKey: ['advisory'] });
           }}
         />
 
@@ -197,7 +200,9 @@ export const NangMuaApp: React.FC = () => {
         />
 
         {/* Page Content */}
-        {currentPage === 'so-sanh' ? (
+        {currentPage === 'tu-van' ? (
+          <main><AdvisoryPage key={`${currentLocation.slug}:${routerLocation.search}`} currentLocation={currentLocation} locations={locations} /></main>
+        ) : currentPage === 'so-sanh' ? (
           <main>
             <ComparePage
               currentLocation={currentLocation}

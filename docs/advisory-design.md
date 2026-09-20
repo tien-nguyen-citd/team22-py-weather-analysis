@@ -131,6 +131,26 @@ Module không đổi schema database, client Open-Meteo, công thức chấm đi
 package chatbot. Các kiểu nghiệp vụ là dataclass; schema HTTP nằm riêng trong
 API. Các hàm tạo ứng viên, tính điểm, xếp hạng và diễn giải không gọi mạng/database.
 
+## Demo trên web
+
+Sau khi chạy backend và frontend theo README, mở
+`http://localhost:5173/ha-noi/tu-van` hoặc chọn tab **Tư vấn** trong ứng dụng.
+
+1. Chọn địa điểm trên thanh địa điểm chung; chọn hoạt động và khoảng tháng.
+2. Nhấn **Tìm thời điểm phù hợp** để xem đề xuất chính và tối đa hai lựa chọn thay thế.
+3. Mở **Vì sao chọn?** để xem số liệu và đóng góp của từng tiêu chí vào điểm tổng.
+4. Chọn một cột trên dải thời gian để xem số liệu của ứng viên đó; hỗ trợ Tab và Enter.
+5. Với ứng viên theo tháng, chọn **Xem giai đoạn trong tháng này** để phân tích đầu,
+   giữa và cuối tháng.
+
+Ba mẫu điền nhanh gồm đám cưới tại TP.HCM, du lịch Phú Quốc và cắm trại Đà Lạt.
+Mẫu chỉ điền địa điểm, hoạt động và 12 tháng mặc định; kết quả luôn lấy từ API,
+không gắn cứng thời điểm thắng. Mẫu được ẩn nếu địa điểm không còn trong danh mục.
+
+Danh mục và tiêu chí lấy từ backend. Kết quả được cache theo toàn bộ yêu cầu;
+đổi đầu vào sẽ ẩn kết quả cũ và hủy chờ request cũ. Lỗi dự báo hiện tại không chặn
+tư vấn từ lịch sử. Lần đầu tải lịch sử có thông báo chờ và lỗi có nút thử lại.
+
 ## Thử qua API
 
 Khởi động backend theo README, mở `http://localhost:8000/docs`, nhóm `advisory`.
