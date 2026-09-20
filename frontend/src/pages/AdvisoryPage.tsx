@@ -4,6 +4,7 @@ import { LoaderCircle, PencilLine } from 'lucide-react';
 import { getAdvice, getAdvisoryActivities } from '../api/advisory';
 import { getNluHealth, understandQuestion } from '../api/nlu';
 import { AdvisoryChatBox } from '../components/AdvisoryChatBox';
+import { AdvisoryPageFooter } from '../components/AdvisoryPageFooter';
 import { AdvisoryQueryForm } from '../components/AdvisoryQueryForm';
 import { AdvisoryResults } from '../components/AdvisoryResults';
 import { ErrorMessage } from '../components/ErrorMessage';
@@ -104,10 +105,10 @@ export function AdvisoryPage({ locations, currentLocationSlug }: AdvisoryPagePro
           locations={locations}
           activities={activities.data ?? []}
           initial={
-            query ?? {
-              locationSlug: currentLocationSlug,
-              activityId: 'general',
-              time: defaultAdvisoryRange(),
+            {
+              locationSlug: '',
+              activityId: '',
+              time: query?.time ?? defaultAdvisoryRange(),
             }
           }
           onSubmit={runFormQuery}
@@ -115,7 +116,6 @@ export function AdvisoryPage({ locations, currentLocationSlug }: AdvisoryPagePro
         />
       ) : (
         <AdvisoryChatBox
-          activities={activities.data ?? []}
           isAsking={isAsking}
           onAsk={question => void ask(question)}
           onOpenForm={() => setShowForm(true)}
@@ -178,6 +178,8 @@ export function AdvisoryPage({ locations, currentLocationSlug }: AdvisoryPagePro
           onExploreMonth={exploreMonth}
         />
       )}
+
+      {activities.data && <AdvisoryPageFooter activities={activities.data} />}
     </div>
   );
 }

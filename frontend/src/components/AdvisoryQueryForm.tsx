@@ -34,10 +34,10 @@ export function AdvisoryQueryForm({
     event.preventDefault();
     const error =
       validateAdvisoryRange(query.time) ??
-      (!profile ? 'Vui lòng chọn hoạt động trong danh mục.' : null) ??
       (!locations.some(location => location.slug === query.locationSlug)
         ? 'Vui lòng chọn địa điểm trong danh mục.'
-        : null);
+        : null) ??
+      (!profile ? 'Vui lòng chọn hoạt động trong danh mục.' : null);
     setValidationError(error);
     if (!error) onSubmit(query);
   }
@@ -73,6 +73,9 @@ export function AdvisoryQueryForm({
               value={query.locationSlug}
               onChange={event => setQuery({ ...query, locationSlug: event.target.value })}
             >
+              <option value="" disabled>
+                Chọn địa điểm
+              </option>
               {locations.map(location => (
                 <option key={location.slug} value={location.slug}>
                   {location.name}
@@ -89,7 +92,9 @@ export function AdvisoryQueryForm({
               value={query.activityId}
               onChange={event => setQuery({ ...query, activityId: event.target.value })}
             >
-              {!profile && <option value={query.activityId}>Chọn hoạt động</option>}
+              <option value="" disabled>
+                Chọn hoạt động
+              </option>
               {activities.map(activity => (
                 <option key={activity.id} value={activity.id}>
                   {activity.name}
