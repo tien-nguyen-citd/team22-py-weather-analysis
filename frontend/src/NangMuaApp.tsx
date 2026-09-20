@@ -204,7 +204,12 @@ export const NangMuaApp: React.FC = () => {
 
         {/* Page Content */}
         {currentPage === 'tu-van-v2' ? (
-          <main><AdvisoryPageV2 locations={locations} /></main>
+          <main>
+            <AdvisoryPageV2
+              locations={locations}
+              currentLocationSlug={currentLocation.slug}
+            />
+          </main>
         ) : currentPage === 'tu-van' ? (
           <main><AdvisoryPage key={`${currentLocation.slug}:${routerLocation.search}`} currentLocation={currentLocation} locations={locations} /></main>
         ) : currentPage === 'so-sanh' ? (

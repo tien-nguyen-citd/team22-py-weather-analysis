@@ -1,7 +1,12 @@
 import { useState, type FormEvent } from 'react';
 import { Bot, FileText, MessageCircle, Send } from 'lucide-react';
 import type { ActivityProfile } from '../api/advisory';
-import { SAMPLE_QUESTIONS } from '../api/questionUnderstanding';
+
+const SAMPLE_QUESTIONS = [
+  'Mùa này đi Phú Quốc có hợp không?',
+  'Đám cưới tháng mấy thì đẹp nhất?',
+  'Sang năm cắm trại ở Đà Lạt vào tháng nào thì ít mưa?',
+];
 
 const STEPS = [
   'Lấy ra địa điểm, khoảng thời gian và hoạt động từ câu hỏi.',
@@ -11,14 +16,14 @@ const STEPS = [
 
 interface AdvisoryChatBoxProps {
   activities: ActivityProfile[];
-  notUnderstood: boolean;
+  isAsking: boolean;
   onAsk: (question: string) => void;
   onOpenForm: () => void;
 }
 
 export function AdvisoryChatBox({
   activities,
-  notUnderstood,
+  isAsking,
   onAsk,
   onOpenForm,
 }: AdvisoryChatBoxProps) {
@@ -55,11 +60,12 @@ export function AdvisoryChatBox({
             <button
               key={sample}
               type="button"
+              disabled={isAsking}
               onClick={() => {
                 setQuestion(sample);
                 onAsk(sample);
               }}
-              className="focus-ring flex max-w-full items-center gap-2.5 rounded-full border border-border bg-card px-5 py-3 text-left text-[14.5px] text-ink2 hover:bg-acc-soft"
+              className="focus-ring flex max-w-full items-center gap-2.5 rounded-full border border-border bg-card px-5 py-3 text-left text-[14.5px] text-ink2 hover:bg-acc-soft disabled:cursor-wait disabled:opacity-60"
             >
               <MessageCircle size={15} className="shrink-0 text-acc" aria-hidden="true" />
               {sample}
@@ -77,20 +83,8 @@ export function AdvisoryChatBox({
             value={question}
             onChange={event => setQuestion(event.target.value)}
             placeholder="Ví dụ: tháng nào đi Nha Trang thì ít mưa nhất?"
-            aria-describedby={notUnderstood ? 'advisory-question-error' : undefined}
             className="focus-ring mt-2 block w-full min-w-0 rounded-2xl border border-border bg-tint px-5 py-4 text-[15.5px] text-ink"
           />
-
-          {notUnderstood && (
-            <p
-              id="advisory-question-error"
-              role="alert"
-              className="mt-3 rounded-2xl bg-tint px-4 py-3 text-sm leading-relaxed text-ink2"
-            >
-              Phần đọc câu hỏi tự do đang được xây dựng, hiện chỉ nhận đúng ba câu mẫu ở trên. Bạn
-              bấm một câu mẫu, hoặc điền tiêu chí vào form để nhận tư vấn ngay.
-            </p>
-          )}
 
           <div className="mt-4 flex flex-wrap items-center justify-end gap-3">
             <button
@@ -103,9 +97,10 @@ export function AdvisoryChatBox({
             </button>
             <button
               type="submit"
-              className="focus-ring inline-flex min-h-12 items-center justify-center gap-2 rounded-2xl bg-acc px-6 py-3 text-sm font-semibold text-acc-ink"
+              disabled={isAsking}
+              className="focus-ring inline-flex min-h-12 items-center justify-center gap-2 rounded-2xl bg-acc px-6 py-3 text-sm font-semibold text-acc-ink disabled:cursor-wait disabled:opacity-60"
             >
-              Gửi câu hỏi
+              {isAsking ? 'Đang đọc câu hỏi…' : 'Gửi câu hỏi'}
               <Send size={16} aria-hidden="true" />
             </button>
           </div>

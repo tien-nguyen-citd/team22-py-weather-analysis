@@ -1,4 +1,5 @@
 import type { MonthRange } from '../api/advisory';
+import type { QuestionUnderstanding } from '../api/nlu';
 
 /** Ba thông tin đủ để chạy một lượt tư vấn. */
 export interface AdvisoryQuery {
@@ -17,6 +18,16 @@ export function vietnamYearMonth(now = new Date()): { year: number; month: numbe
   };
 }
 
+/** Ngày hôm nay theo giờ Việt Nam, dạng YYYY-MM-DD. */
+export function vietnamToday(now = new Date()): string {
+  const parts = new Intl.DateTimeFormat('en', {
+    timeZone: 'Asia/Ho_Chi_Minh', year: 'numeric', month: '2-digit', day: '2-digit',
+  }).formatToParts(now);
+  const value = (type: Intl.DateTimeFormatPartTypes) =>
+    parts.find(part => part.type === type)?.value ?? '';
+  return `${value('year')}-${value('month')}-${value('day')}`;
+}
+
 /** Khoảng gồm `count` tháng liên tiếp, bắt đầu từ tháng kế tiếp. */
 export function upcomingMonthRange(count: number, now = new Date()): MonthRange {
   const { year, month } = vietnamYearMonth(now);
@@ -27,6 +38,46 @@ export function upcomingMonthRange(count: number, now = new Date()): MonthRange 
 
 export function defaultAdvisoryRange(now = new Date()): MonthRange {
   return upcomingMonthRange(12, now);
+}
+
+function monthIndex(value: string): number {
+  return Number(value.slice(0, 4)) * 12 + Number(value.slice(5, 7)) - 1;
+}
+
+function formatMonthIndex(index: number): string {
+  return `${Math.floor(index / 12)}-${String(index % 12 + 1).padStart(2, '0')}`;
+}
+
+/** Quy kết quả đọc câu hỏi về ba tiêu chí mà /api/advisory nhận. */
+export function toAdvisoryQuery(
+  understanding: QuestionUnderstanding,
+  fallbackLocationSlug: string,
+  now = new Date(),
+): AdvisoryQuery {
+  const { time } = understanding;
+  let range = defaultAdvisoryRange(now);
+
+  if (time?.kind === 'now') {
+    const { year, month } = vietnamYearMonth(now);
+    const currentMonth = `${year}-${String(month).padStart(2, '0')}`;
+    range = { startMonth: currentMonth, endMonth: currentMonth };
+  } else if (time && (time.startDate || time.endDate)) {
+    const startMonth = (time.startDate ?? time.endDate)?.slice(0, 7) ?? '';
+    const requestedEndMonth = (time.endDate ?? time.startDate)?.slice(0, 7) ?? '';
+    const lastAllowedMonth = formatMonthIndex(monthIndex(startMonth) + 11);
+    range = {
+      startMonth,
+      endMonth: monthIndex(requestedEndMonth) > monthIndex(lastAllowedMonth)
+        ? lastAllowedMonth
+        : requestedEndMonth,
+    };
+  }
+
+  return {
+    locationSlug: understanding.locationSlug || fallbackLocationSlug,
+    activityId: understanding.activityId || 'general',
+    time: range,
+  };
 }
 
 export function validateAdvisoryRange(range: MonthRange): string | null {

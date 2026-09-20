@@ -28,9 +28,10 @@
     "editor.detectIndentation": false
   },
   "files.exclude": {
-    "backend/__pycache__": true,
-    "backend/.pytest_cache": true,
-    "backend/.ruff_cache": true,
-    "backend/.venv": true,
+    "**/__pycache__": true,
+    "**/.pytest_cache": true,
+    "**/.ruff_cache": true,
+    "**/.venv": true,
+    "**/.models": true,
   },
 }

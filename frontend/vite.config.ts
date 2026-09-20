@@ -8,6 +8,7 @@ export default defineConfig({
   server: {
     proxy: {
       '/api': process.env.WEATHER_API_URL ?? 'http://localhost:8000',
+      '/nlu': process.env.WEATHER_NLU_URL ?? 'http://localhost:8002',
     },
   },
 })

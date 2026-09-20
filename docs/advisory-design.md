@@ -8,8 +8,35 @@ thời điểm ở mức tháng hoặc đầu/giữa/cuối tháng, không dự 
 
 - Chọn thời điểm tại một địa điểm có trong danh mục của ứng dụng.
 - Dùng lượng mưa ngày và nhiệt độ trung bình ngày đã lưu trong `daily_weather`.
-- Chưa chọn địa điểm, tư vấn giờ/ngày, lập lịch nhiều ngày liên tiếp hoặc nối chatbot.
+- Chưa tư vấn giờ/ngày hoặc lập lịch nhiều ngày liên tiếp. Giao diện Tư vấn mới
+  nhận câu hỏi tự do qua `nlu-service` rồi quy về đầu vào theo tháng của module.
 - Backend không phụ thuộc package hoặc model ML trong `chatbot/`.
+
+## Nối với nlu-service
+
+Trang Tư vấn mới kiểm tra `GET /nlu/health` khi tải. Khi dịch vụ sẵn sàng, câu
+hỏi được gửi tới `POST /nlu/understand` cùng địa điểm hiện tại và ngày tham chiếu
+theo giờ Việt Nam. Nếu không kết nối được dịch vụ hoặc lời gọi thất bại, trang tự
+chuyển sang form nhập tiêu chí và luồng `/api/advisory` vẫn hoạt động bình thường.
+
+Kết quả thời gian từ dịch vụ được quy về khoảng tháng như sau:
+
+| Loại thời gian | Khoảng tháng gửi tới `/api/advisory` |
+| --- | --- |
+| Không có | 12 tháng kể từ tháng kế tiếp |
+| `now` | Tháng hiện tại |
+| `dates` | Tháng của ngày bắt đầu đến tháng của ngày kết thúc |
+| `months` | Tháng bắt đầu đến tháng kết thúc |
+| `best_time` không giới hạn | 12 tháng kể từ tháng kế tiếp |
+| `best_time` có giới hạn | Tháng bắt đầu đến tháng kết thúc |
+
+Nếu thiếu một đầu khoảng thời gian, mốc còn lại được dùng cho cả hai đầu. Khoảng
+dài hơn 12 tháng được cắt còn 12 tháng đầu. Địa điểm không có trong câu hỏi dùng
+địa điểm đang chọn; hoạt động không xác định dùng nhu cầu chung.
+
+`now` và `dates` hiện vẫn được phân tích bằng lịch sử khí hậu của tháng tương ứng,
+không dùng dữ liệu thời tiết hiện tại hoặc dự báo ngày. Vì vậy kết quả không phải
+câu trả lời dự báo chính xác cho hôm nay hay một ngày cụ thể.
 
 ## Đầu vào và ứng viên
 

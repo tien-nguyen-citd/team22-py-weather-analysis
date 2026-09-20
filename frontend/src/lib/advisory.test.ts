@@ -1,5 +1,26 @@
 import { describe, expect, it } from 'vitest';
-import { defaultAdvisoryRange, validateAdvisoryRange } from './advisory';
+import type { QuestionUnderstanding } from '../api/nlu';
+import {
+  defaultAdvisoryRange,
+  toAdvisoryQuery,
+  validateAdvisoryRange,
+  vietnamToday,
+} from './advisory';
+
+const NOW = new Date('2026-09-20T05:00:00Z');
+
+function understanding(
+  time: QuestionUnderstanding['time'],
+  overrides: Partial<QuestionUnderstanding> = {},
+): QuestionUnderstanding {
+  return {
+    locationSlug: 'da-lat',
+    locationFromQuestion: true,
+    activityId: 'camping',
+    time,
+    ...overrides,
+  };
+}
 
 describe('Khoảng tháng tư vấn', () => {
   it('lấy tháng kế tiếp theo ngày Việt Nam khi UTC vẫn ở năm trước', () => {
@@ -21,5 +42,50 @@ describe('Khoảng tháng tư vấn', () => {
     ['2027-13', '2028-01'], ['2027-02', '2027-01'], ['2027-01', '2028-01'],
   ])('từ chối khoảng %s đến %s', (startMonth, endMonth) => {
     expect(validateAdvisoryRange({ startMonth, endMonth })).not.toBeNull();
+  });
+});
+
+describe('Quy đổi kết quả đọc câu hỏi', () => {
+  it.each([
+    ['không có thời gian', null, { startMonth: '2026-10', endMonth: '2027-09' }],
+    ['hiện tại', { kind: 'now', startDate: '2026-09-20', endDate: '2026-09-20' }, { startMonth: '2026-09', endMonth: '2026-09' }],
+    ['khoảng ngày', { kind: 'dates', startDate: '2026-10-28', endDate: '2026-11-03' }, { startMonth: '2026-10', endMonth: '2026-11' }],
+    ['khoảng tháng', { kind: 'months', startDate: '2027-01-01', endDate: '2027-03-31' }, { startMonth: '2027-01', endMonth: '2027-03' }],
+    ['tìm thời điểm không giới hạn', { kind: 'best_time', startDate: null, endDate: null }, { startMonth: '2026-10', endMonth: '2027-09' }],
+    ['tìm thời điểm có giới hạn', { kind: 'best_time', startDate: '2027-04-01', endDate: '2027-08-31' }, { startMonth: '2027-04', endMonth: '2027-08' }],
+  ] as const)('quy đổi %s', (_label, time, expected) => {
+    expect(toAdvisoryQuery(understanding(time), 'ha-noi', NOW).time).toEqual(expected);
+  });
+
+  it.each([
+    [{ kind: 'dates', startDate: '2027-02-10', endDate: null }, { startMonth: '2027-02', endMonth: '2027-02' }],
+    [{ kind: 'months', startDate: null, endDate: '2027-06-30' }, { startMonth: '2027-06', endMonth: '2027-06' }],
+  ] as const)('dùng mốc còn lại khi khoảng thời gian thiếu một đầu', (time, expected) => {
+    expect(toAdvisoryQuery(understanding(time), 'ha-noi', NOW).time).toEqual(expected);
+  });
+
+  it('dùng địa điểm hiện tại và nhu cầu chung khi service không đọc được', () => {
+    const result = toAdvisoryQuery(understanding(null, {
+      locationSlug: null,
+      activityId: null,
+    }), 'ha-noi', NOW);
+
+    expect(result.locationSlug).toBe('ha-noi');
+    expect(result.activityId).toBe('general');
+  });
+
+  it('cắt khoảng dài hơn 12 tháng từ tháng bắt đầu', () => {
+    const result = toAdvisoryQuery(understanding({
+      kind: 'months', startDate: '2026-11-01', endDate: '2028-03-31',
+    }), 'ha-noi', NOW);
+
+    expect(result.time).toEqual({ startMonth: '2026-11', endMonth: '2027-10' });
+  });
+});
+
+describe('Ngày Việt Nam', () => {
+  it('đổi ngày theo múi giờ Việt Nam thay vì UTC', () => {
+    expect(vietnamToday(new Date('2026-09-20T16:59:59Z'))).toBe('2026-09-20');
+    expect(vietnamToday(new Date('2026-09-20T17:00:00Z'))).toBe('2026-09-21');
   });
 });

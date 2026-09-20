@@ -2,24 +2,30 @@ import { useState } from 'react';
 import { skipToken, useQuery } from '@tanstack/react-query';
 import { LoaderCircle, PencilLine } from 'lucide-react';
 import { getAdvice, getAdvisoryActivities } from '../api/advisory';
-import { understandQuestion } from '../api/questionUnderstanding';
-import { DEFAULT_LOCATION_SLUG } from '../api/locations';
+import { getNluHealth, understandQuestion } from '../api/nlu';
 import { AdvisoryChatBox } from '../components/AdvisoryChatBox';
 import { AdvisoryQueryForm } from '../components/AdvisoryQueryForm';
 import { AdvisoryResults } from '../components/AdvisoryResults';
 import { ErrorMessage } from '../components/ErrorMessage';
-import { defaultAdvisoryRange, formatAdvisoryDate, type AdvisoryQuery } from '../lib/advisory';
+import {
+  defaultAdvisoryRange,
+  formatAdvisoryDate,
+  toAdvisoryQuery,
+  vietnamToday,
+  type AdvisoryQuery,
+} from '../lib/advisory';
 import type { LocationItem } from '../types';
 
 const TOP_K = 2;
 
 interface AdvisoryPageV2Props {
   locations: LocationItem[];
+  currentLocationSlug: string;
 }
 
-export function AdvisoryPageV2({ locations }: AdvisoryPageV2Props) {
+export function AdvisoryPageV2({ locations, currentLocationSlug }: AdvisoryPageV2Props) {
   const [showForm, setShowForm] = useState(false);
-  const [notUnderstood, setNotUnderstood] = useState(false);
+  const [isAsking, setIsAsking] = useState(false);
   const [query, setQuery] = useState<AdvisoryQuery | null>(null);
   const [askedByQuestion, setAskedByQuestion] = useState(false);
 
@@ -27,6 +33,12 @@ export function AdvisoryPageV2({ locations }: AdvisoryPageV2Props) {
     queryKey: ['advisory', 'activities'],
     queryFn: ({ signal }) => getAdvisoryActivities(signal),
     staleTime: 30 * 60 * 1000,
+    retry: false,
+  });
+  const nluHealth = useQuery({
+    queryKey: ['nlu', 'health'],
+    queryFn: ({ signal }) => getNluHealth(signal),
+    staleTime: Infinity,
     retry: false,
   });
   const advice = useQuery({
@@ -39,18 +51,27 @@ export function AdvisoryPageV2({ locations }: AdvisoryPageV2Props) {
   });
 
   async function ask(question: string) {
-    const understood = await understandQuestion(question);
-    setNotUnderstood(!understood);
-    if (!understood) return;
-    setQuery(understood);
-    setAskedByQuestion(true);
-    setShowForm(false);
+    setIsAsking(true);
+    try {
+      const now = new Date();
+      const understood = await understandQuestion({
+        question,
+        currentLocationSlug,
+        today: vietnamToday(now),
+      });
+      setQuery(toAdvisoryQuery(understood, currentLocationSlug, now));
+      setAskedByQuestion(true);
+      setShowForm(false);
+    } catch {
+      setShowForm(true);
+    } finally {
+      setIsAsking(false);
+    }
   }
 
   function runFormQuery(next: AdvisoryQuery) {
     setQuery(next);
     setAskedByQuestion(false);
-    setNotUnderstood(false);
     setShowForm(false);
   }
 
@@ -66,7 +87,7 @@ export function AdvisoryPageV2({ locations }: AdvisoryPageV2Props) {
 
   return (
     <div className="mt-5 space-y-7">
-      {activities.isPending ? (
+      {activities.isPending || nluHealth.isPending ? (
         <p role="status" className="text-sm text-m1">
           Đang tải danh mục hoạt động…
         </p>
@@ -78,24 +99,24 @@ export function AdvisoryPageV2({ locations }: AdvisoryPageV2Props) {
             void activities.refetch();
           }}
         />
-      ) : showForm ? (
+      ) : showForm || !nluHealth.isSuccess ? (
         <AdvisoryQueryForm
           locations={locations}
           activities={activities.data ?? []}
           initial={
             query ?? {
-              locationSlug: DEFAULT_LOCATION_SLUG,
+              locationSlug: currentLocationSlug,
               activityId: 'general',
               time: defaultAdvisoryRange(),
             }
           }
           onSubmit={runFormQuery}
-          onBackToChat={() => setShowForm(false)}
+          onBackToChat={nluHealth.isSuccess ? () => setShowForm(false) : undefined}
         />
       ) : (
         <AdvisoryChatBox
           activities={activities.data ?? []}
-          notUnderstood={notUnderstood}
+          isAsking={isAsking}
           onAsk={question => void ask(question)}
           onOpenForm={() => setShowForm(true)}
         />

@@ -95,7 +95,9 @@ uvicorn weather_nlu.api.app:app --port 8002 --reload
 ```
 
 Ứng dụng backend và các màn hình hiện có vẫn chạy bình thường khi dịch vụ đọc
-câu hỏi tắt. Frontend sẽ kết nối service này trong luồng tư vấn ở task tiếp theo.
+câu hỏi tắt. Tab Tư vấn mới tự chuyển sang form nhập tay nếu không kết nối được
+dịch vụ. Khi chạy Vite ở môi trường phát triển, lỗi proxy kết nối tới port 8002
+trong console là bình thường nếu dịch vụ này đang tắt.
 
 Trang thời tiết ở `http://localhost:5173`.
 
@@ -188,6 +190,7 @@ Không cần bật sẵn ứng dụng: test tự khởi động backend và fron
 - `WEATHER_DB_DIR`: thư mục chứa tệp `.mdf` và `.ldf`. Mặc định là `backend/data`.
 - `WEATHER_SESSION_SECRET`: khóa dùng để ký session cookie. Phải đặt thành một giá trị bí mật khi triển khai thật.
 - `WEATHER_API_URL`: URL backend mà Vite chuyển tiếp các request `/api` tới. Mặc định là `http://localhost:8000`.
+- `WEATHER_NLU_URL`: URL dịch vụ đọc câu hỏi mà Vite chuyển tiếp các request `/nlu` tới. Mặc định là `http://localhost:8002`.
 
 Khi dùng SQL Server thật, đặt `WEATHER_DB_URL` theo dạng
 `mssql+pyodbc://user:password@server/WeatherAnalysis?driver=ODBC+Driver+18+for+SQL+Server&TrustServerCertificate=yes`.
