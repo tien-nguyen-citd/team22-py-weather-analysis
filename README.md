@@ -47,6 +47,19 @@ cd frontend
 npm install
 ```
 
+Cài đặt dịch vụ đọc câu hỏi trong một terminal khác:
+
+```powershell
+cd nlu-service
+python -m venv .venv
+.\.venv\Scripts\Activate.ps1
+python -m pip install -r requirements-dev.txt
+python -m weather_nlu.download
+```
+
+Lần đầu tải model cần kết nối Internet. Model được lưu trong
+`nlu-service/.models`.
+
 ## Chạy ứng dụng
 
 Khởi động backend tại `http://localhost:8000`:
@@ -71,6 +84,18 @@ Khởi động frontend tại `http://localhost:5173` trong một terminal khác
 cd frontend
 npm run dev
 ```
+
+Khởi động dịch vụ đọc câu hỏi tại `http://localhost:8002` trong một terminal
+khác:
+
+```powershell
+cd nlu-service
+.\.venv\Scripts\Activate.ps1
+uvicorn weather_nlu.api.app:app --port 8002 --reload
+```
+
+Ứng dụng backend và các màn hình hiện có vẫn chạy bình thường khi dịch vụ đọc
+câu hỏi tắt. Frontend sẽ kết nối service này trong luồng tư vấn ở task tiếp theo.
 
 Trang thời tiết ở `http://localhost:5173`.
 
@@ -112,6 +137,17 @@ npm run build
 npm test
 ```
 
+Kiểm tra dịch vụ đọc câu hỏi:
+
+```powershell
+cd nlu-service
+.\.venv\Scripts\Activate.ps1
+pyright
+ruff check .
+pytest -q
+pytest -m model
+```
+
 Kiểm thử giao diện:
 
 ```powershell
@@ -142,6 +178,8 @@ Không cần bật sẵn ứng dụng: test tự khởi động backend và fron
 - `frontend/src/api/`: mã gọi API từ trình duyệt.
 - `frontend/src/pages/`: các màn hình của ứng dụng.
 - `frontend/src/components/`: các thành phần giao diện dùng lại được.
+- `nlu-service/weather_nlu/`: API và logic đọc câu hỏi tư vấn thời tiết.
+- `nlu-service/tests/`: unit test và kiểm tra độ chính xác của model đọc câu hỏi.
 
 ## Biến môi trường
 

@@ -24,6 +24,17 @@
       "isBackground": true
     },
     {
+      "label": "Chạy dịch vụ đọc câu hỏi",
+      "type": "shell",
+      "command": "${workspaceFolder}\\nlu-service\\.venv\\Scripts\\python.exe",
+      "args": ["-m", "uvicorn", "weather_nlu.api.app:app", "--port", "8002", "--reload"],
+      "options": {
+        "cwd": "${workspaceFolder}/nlu-service"
+      },
+      "problemMatcher": [],
+      "isBackground": true
+    },
+    {
       "label": "Chạy ứng dụng",
       "dependsOn": ["Chạy backend", "Chạy frontend"],
       "dependsOrder": "parallel",
@@ -58,6 +69,17 @@
       "args": ["test"],
       "options": {
         "cwd": "${workspaceFolder}/frontend"
+      },
+      "group": "test",
+      "problemMatcher": []
+    },
+    {
+      "label": "Chạy test dịch vụ đọc câu hỏi",
+      "type": "shell",
+      "command": "${workspaceFolder}\\nlu-service\\.venv\\Scripts\\python.exe",
+      "args": ["-m", "pytest", "-q"],
+      "options": {
+        "cwd": "${workspaceFolder}/nlu-service"
       },
       "group": "test",
       "problemMatcher": []

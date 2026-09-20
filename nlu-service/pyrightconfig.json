@@ -1,0 +1,7 @@
+{
+    "typeCheckingMode": "standard",
+    "reportMissingImports": "error",
+    "include": ["weather_nlu", "tests"],
+    "venvPath": ".",
+    "venv": ".venv"
+}

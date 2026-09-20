@@ -1,0 +1,10 @@
+# Môi trường Python
+.venv/
+
+# Model tải về khi chạy dịch vụ
+.models/
+
+# Cache của Python và công cụ kiểm tra
+__pycache__/
+.pytest_cache/
+.ruff_cache/

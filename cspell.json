@@ -25,6 +25,7 @@
     "minilm",
     "minishlab",
     "numpy",
+    "nlu",
     "onnx",
     "onnxruntime",
     "pickleball",
