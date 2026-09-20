@@ -1,7 +1,0 @@
-{
-    "typeCheckingMode": "standard",
-    "reportMissingImports": "error",
-    "include": ["weather_chatbot", "tests"],
-    "venvPath": ".",
-    "venv": ".venv"
-}

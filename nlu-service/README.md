@@ -87,9 +87,6 @@ khoảng thời gian cụ thể, rồi hiện tại.
 - Service đọc `backend/data/seed/locations.csv` và
   `backend/data/seed/location-aliases.csv`. Danh sách địa điểm do quản trị viên
   nhập trong ứng dụng không tự động cập nhật cho service.
-- `data/activities.csv` và `data/activity-examples.csv` là bản sao độc lập từ
-  project nghiên cứu `chatbot`. Mã hoạt động phải được giữ đồng bộ với
-  `backend/weather_analysis/advisory/activities.py`, trừ mã `general` của backend.
 - Service chỉ đọc một câu hỏi mỗi lần và không có ngữ cảnh hội thoại.
 - Cấu hình `rule+minilm` ưu tiên từ khóa hoạt động; MiniLM chỉ được dùng khi câu
   hỏi không chứa từ khóa đã biết.
