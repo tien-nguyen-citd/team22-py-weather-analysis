@@ -1,6 +1,8 @@
 import React, { useEffect, useRef } from "react";
 import { RotateCw } from "lucide-react";
 import { BrandLogo } from "./BrandLogo";
+import { UserLocationPicker } from "./UserLocationPicker";
+import type { LocationItem } from "../types";
 
 export type PageTab =
   | "tong-quan"
@@ -15,6 +17,11 @@ interface HeaderProps {
   updatedAt: string;
   isFetching?: boolean;
   onRefresh?: () => void;
+  userLocation: LocationItem;
+  isDetectingUserLocation: boolean;
+  userLocationError: string | null;
+  onSelectUserLocation: (location: LocationItem) => void;
+  onDetectUserLocation: () => Promise<void>;
 }
 
 const TABS: { key: PageTab; label: string }[] = [
@@ -31,6 +38,11 @@ export const Header: React.FC<HeaderProps> = ({
   updatedAt,
   isFetching,
   onRefresh,
+  userLocation,
+  isDetectingUserLocation,
+  userLocationError,
+  onSelectUserLocation,
+  onDetectUserLocation,
 }) => {
   const activeTabRef = useRef<HTMLButtonElement>(null);
   useEffect(() => {
@@ -67,8 +79,8 @@ export const Header: React.FC<HeaderProps> = ({
         </nav>
       </div>
 
-      {/* Date time & Refresh */}
-      <div className="flex items-center gap-[10px] ml-auto">
+      {/* Date time, refresh & user location */}
+      <div className="ml-auto flex flex-wrap items-center justify-end gap-[10px]">
         <span className="text-[12.5px] text-m2">{updatedAt}</span>
         {onRefresh && (
           <button
@@ -82,6 +94,13 @@ export const Header: React.FC<HeaderProps> = ({
             />
           </button>
         )}
+        <UserLocationPicker
+          userLocation={userLocation}
+          isDetecting={isDetectingUserLocation}
+          errorMessage={userLocationError}
+          onSelect={onSelectUserLocation}
+          onDetect={onDetectUserLocation}
+        />
       </div>
     </header>
   );

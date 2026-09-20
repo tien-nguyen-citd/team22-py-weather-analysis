@@ -21,3 +21,12 @@ def test_search_by_abbreviation_shows_full_name(page: Page) -> None:
 
     expect(location_bar.results).to_have_count(1)
     expect(location_bar.results).to_contain_text("Hồ Chí Minh")
+
+
+def test_compare_page_does_not_show_location_bar(page: Page) -> None:
+    page.goto("/ha-noi/so-sanh")
+
+    expect(page.get_by_placeholder("Tìm tỉnh, thành phố…")).to_have_count(0)
+    expect(
+        page.get_by_role("group", name="Địa điểm yêu thích và gợi ý")
+    ).to_have_count(0)

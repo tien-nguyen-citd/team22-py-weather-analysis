@@ -112,6 +112,92 @@ def test_free_question_uses_the_current_location_when_nlu_returns_none(
     }
 
 
+def test_saved_user_location_is_independent_from_viewed_location(
+    page: Page,
+    advisory_requests: list[dict[str, Any]],  # noqa: F811
+    nlu_requests: list[dict[str, Any]],
+) -> None:
+    page.add_init_script(
+        "localStorage.setItem('nang_mua_user_location', 'da-nang')"
+    )
+    page.goto("/ha-noi/tu-van")
+
+    expect(page.get_by_role("button", name="Vị trí của tôi: Đà Nẵng")).to_be_visible()
+    page.get_by_label("Câu hỏi của bạn", exact=True).fill(FREE_QUESTION)
+    page.get_by_role("button", name="Gửi câu hỏi", exact=True).click()
+
+    expect(page.get_by_role("region", name="Kết quả tư vấn")).to_be_visible()
+    assert page.url.endswith("/ha-noi/tu-van")
+    assert nlu_requests[-1]["currentLocationSlug"] == "da-nang"
+    assert advisory_requests[-1]["locationSlug"] == "da-nang"
+
+
+def test_user_can_search_change_and_keep_user_location(
+    page: Page,
+    advisory_requests: list[dict[str, Any]],  # noqa: F811
+    nlu_requests: list[dict[str, Any]],
+) -> None:
+    page.goto("/ha-noi/tu-van")
+
+    expect(page.get_by_role("button", name="Vị trí của tôi: Hà Nội")).to_be_visible()
+    page.get_by_role("button", name="Vị trí của tôi: Hà Nội").click()
+    page.get_by_label("Tìm vị trí của tôi").fill("Đà Nẵng")
+    page.get_by_role("option", name="Đà Nẵng Trung Trung Bộ").click()
+
+    assert page.url.endswith("/ha-noi/tu-van")
+    expect(page.get_by_role("button", name="Vị trí của tôi: Đà Nẵng")).to_be_visible()
+    page.reload()
+    expect(page.get_by_role("button", name="Vị trí của tôi: Đà Nẵng")).to_be_visible()
+
+
+def test_first_visit_uses_browser_location_for_user_location_and_root_route(
+    page: Page,
+    advisory_requests: list[dict[str, Any]],  # noqa: F811
+) -> None:
+    page.add_init_script(
+        """
+        Object.defineProperty(navigator, 'geolocation', {
+          configurable: true,
+          value: {
+            getCurrentPosition(success) {
+              success({ coords: { latitude: 16.05, longitude: 108.2 } });
+            },
+          },
+        });
+        """
+    )
+    page.goto("/")
+
+    page.wait_for_url("**/da-nang/tong-quan")
+    expect(page.get_by_role("button", name="Vị trí của tôi: Đà Nẵng")).to_be_visible()
+
+
+def test_failed_manual_detection_keeps_the_saved_location(
+    page: Page,
+    advisory_requests: list[dict[str, Any]],  # noqa: F811
+) -> None:
+    page.add_init_script(
+        """
+        localStorage.setItem('nang_mua_user_location', 'ha-noi');
+        Object.defineProperty(navigator, 'geolocation', {
+          configurable: true,
+          value: {
+            getCurrentPosition(_success, error) {
+              error({ code: 1, message: 'permission denied' });
+            },
+          },
+        });
+        """
+    )
+    page.goto("/ha-noi/tu-van")
+
+    page.get_by_role("button", name="Vị trí của tôi: Hà Nội").click()
+    page.get_by_role("button", name="Dùng vị trí hiện tại").click()
+
+    expect(page.get_by_role("alert")).to_contain_text("Không xác định được vị trí")
+    expect(page.get_by_role("button", name="Vị trí của tôi: Hà Nội")).to_be_visible()
+
+
 def test_unavailable_nlu_opens_the_manual_form_without_a_back_button(
     page: Page,
     advisory_requests: list[dict[str, Any]],  # noqa: F811

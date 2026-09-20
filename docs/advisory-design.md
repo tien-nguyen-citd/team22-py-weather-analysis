@@ -15,9 +15,15 @@ thời điểm ở mức tháng hoặc đầu/giữa/cuối tháng, không dự 
 ## Nối với nlu-service
 
 Trang Tư vấn mới kiểm tra `GET /nlu/health` khi tải. Khi dịch vụ sẵn sàng, câu
-hỏi được gửi tới `POST /nlu/understand` cùng địa điểm hiện tại và ngày tham chiếu
+hỏi được gửi tới `POST /nlu/understand` cùng vị trí người dùng và ngày tham chiếu
 theo giờ Việt Nam. Nếu không kết nối được dịch vụ hoặc lời gọi thất bại, trang tự
 chuyển sang form nhập tiêu chí và luồng `/api/advisory` vẫn hoạt động bình thường.
+
+Vị trí người dùng là thiết lập chung, độc lập với địa điểm thời tiết đang xem trên
+URL. Giao diện lưu slug địa điểm trong trình duyệt và cho tìm kiếm hoặc định vị lại
+ở góc phải header. Lần đầu chưa có thiết lập, trình duyệt dùng GPS để chọn địa điểm
+gần nhất trong danh mục; nếu không định vị được thì dùng địa điểm đang xem. Tọa độ
+GPS thô không được lưu hoặc gửi tới backend và NLU.
 
 Kết quả thời gian từ dịch vụ được quy về khoảng tháng như sau:
 
@@ -32,7 +38,7 @@ Kết quả thời gian từ dịch vụ được quy về khoảng tháng như 
 
 Nếu thiếu một đầu khoảng thời gian, mốc còn lại được dùng cho cả hai đầu. Khoảng
 dài hơn 12 tháng được cắt còn 12 tháng đầu. Địa điểm không có trong câu hỏi dùng
-địa điểm đang chọn; hoạt động không xác định dùng nhu cầu chung.
+vị trí người dùng đã lưu; hoạt động không xác định dùng nhu cầu chung.
 
 `now` và `dates` hiện vẫn được phân tích bằng lịch sử khí hậu của tháng tương ứng,
 không dùng dữ liệu thời tiết hiện tại hoặc dự báo ngày. Vì vậy kết quả không phải
@@ -163,7 +169,8 @@ API. Các hàm tạo ứng viên, tính điểm, xếp hạng và diễn giải 
 Sau khi chạy backend và frontend theo README, mở
 `http://localhost:5173/ha-noi/tu-van` hoặc chọn tab **Tư vấn** trong ứng dụng.
 
-1. Chọn địa điểm trên thanh địa điểm chung; chọn hoạt động và khoảng tháng.
+1. Chọn vị trí người dùng ở header hoặc nêu địa điểm trong câu hỏi. Khi dùng form,
+   chọn địa điểm, hoạt động và khoảng tháng.
 2. Nhấn **Tìm thời điểm phù hợp** để xem đề xuất chính và tối đa hai lựa chọn thay thế.
 3. Mở **Vì sao chọn?** để xem số liệu và đóng góp của từng tiêu chí vào điểm tổng.
 4. Chọn một cột trên dải thời gian để xem số liệu của ứng viên đó; hỗ trợ Tab và Enter.

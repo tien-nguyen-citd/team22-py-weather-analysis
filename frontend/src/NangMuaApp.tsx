@@ -18,10 +18,10 @@ import { ErrorMessage } from './components/ErrorMessage';
 import {
   DEFAULT_LOCATION_SLUG,
   findLocationBySlug,
-  findNearestLocation,
 } from './api/locations';
 import { getForecast } from './api/forecast';
 import { useLocations } from './hooks/useLocations';
+import { useUserLocation } from './hooks/useUserLocation';
 import type { LocationItem } from './types';
 
 const FAVORITES_STORAGE_KEY = 'nang_mua_favorites';
@@ -64,6 +64,7 @@ export const NangMuaApp: React.FC = () => {
     locations,
     locationSlug || DEFAULT_LOCATION_SLUG,
   );
+  const userLocationState = useUserLocation(locations, currentLocation);
 
   // Selected tab
   const validPages: PageTab[] = ['tong-quan', 'khung-gio', 'so-sanh', 'lich-su', 'tu-van'];
@@ -96,32 +97,22 @@ export const NangMuaApp: React.FC = () => {
     });
   };
 
-  // Check geolocation on very first visit if on root '/'
+  // Đường dẫn gốc mở địa điểm người dùng sau khi đã đọc lưu trữ hoặc định vị.
   useEffect(() => {
-    if (locations.length > 0 && (routerLocation.pathname === '/' || !locationSlug)) {
-      if ('geolocation' in navigator) {
-        navigator.geolocation.getCurrentPosition(
-          pos => {
-            const nearest = findNearestLocation(
-              locations,
-              pos.coords.latitude,
-              pos.coords.longitude,
-            );
-            navigate(`/${nearest?.slug ?? DEFAULT_LOCATION_SLUG}/tong-quan`, {
-              replace: true,
-            });
-          },
-          () => {
-            // Default fallback
-            navigate(`/${DEFAULT_LOCATION_SLUG}/tong-quan`, { replace: true });
-          },
-          { timeout: 5000 }
-        );
-      } else {
-        navigate(`/${DEFAULT_LOCATION_SLUG}/tong-quan`, { replace: true });
-      }
+    if (
+      userLocationState.isInitialized &&
+      userLocationState.userLocation &&
+      (routerLocation.pathname === '/' || !locationSlug)
+    ) {
+      navigate(`/${userLocationState.userLocation.slug}/tong-quan`, { replace: true });
     }
-  }, [locationSlug, locations, routerLocation.pathname, navigate]);
+  }, [
+    locationSlug,
+    navigate,
+    routerLocation.pathname,
+    userLocationState.isInitialized,
+    userLocationState.userLocation,
+  ]);
 
   // TanStack Query for weather data (cached 30 minutes)
   const {
@@ -159,7 +150,7 @@ export const NangMuaApp: React.FC = () => {
     );
   }
 
-  if (locationsQuery.isError || !currentLocation) {
+  if (locationsQuery.isError || !currentLocation || !userLocationState.userLocation) {
     return (
       <div className="min-h-screen bg-bg text-ink px-[22px] pt-[26px] pb-[80px]">
         <div className="max-w-[1080px] mx-auto">
@@ -187,10 +178,15 @@ export const NangMuaApp: React.FC = () => {
             void queryClient.invalidateQueries({ queryKey: ['climate'] });
             void queryClient.invalidateQueries({ queryKey: ['advisory'] });
           }}
+          userLocation={userLocationState.userLocation}
+          isDetectingUserLocation={userLocationState.isDetecting}
+          userLocationError={userLocationState.errorMessage}
+          onSelectUserLocation={userLocationState.selectUserLocation}
+          onDetectUserLocation={userLocationState.detectUserLocation}
         />
 
-        {/* Common Location Bar — trang Tư vấn tự chọn địa điểm nên không dùng */}
-        {currentPage !== 'tu-van' && (
+        {/* Trang So sánh và Tư vấn tự chọn địa điểm nên không dùng LocationBar. */}
+        {currentPage !== 'so-sanh' && currentPage !== 'tu-van' && (
           <LocationBar
             currentLocation={currentLocation}
             locations={locations}
@@ -206,7 +202,7 @@ export const NangMuaApp: React.FC = () => {
           <main>
             <AdvisoryPage
               locations={locations}
-              currentLocationSlug={currentLocation.slug}
+              userLocationSlug={userLocationState.userLocation.slug}
             />
           </main>
         ) : currentPage === 'so-sanh' ? (

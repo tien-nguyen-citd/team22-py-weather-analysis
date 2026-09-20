@@ -21,10 +21,10 @@ const TOP_K = 2;
 
 interface AdvisoryPageProps {
   locations: LocationItem[];
-  currentLocationSlug: string;
+  userLocationSlug: string;
 }
 
-export function AdvisoryPage({ locations, currentLocationSlug }: AdvisoryPageProps) {
+export function AdvisoryPage({ locations, userLocationSlug }: AdvisoryPageProps) {
   const [showForm, setShowForm] = useState(false);
   const [isAsking, setIsAsking] = useState(false);
   const [query, setQuery] = useState<AdvisoryQuery | null>(null);
@@ -57,10 +57,10 @@ export function AdvisoryPage({ locations, currentLocationSlug }: AdvisoryPagePro
       const now = new Date();
       const understood = await understandQuestion({
         question,
-        currentLocationSlug,
+        currentLocationSlug: userLocationSlug,
         today: vietnamToday(now),
       });
-      setQuery(toAdvisoryQuery(understood, currentLocationSlug, now));
+      setQuery(toAdvisoryQuery(understood, userLocationSlug, now));
       setAskedByQuestion(true);
       setShowForm(false);
     } catch {
@@ -106,8 +106,8 @@ export function AdvisoryPage({ locations, currentLocationSlug }: AdvisoryPagePro
           activities={activities.data ?? []}
           initial={
             {
-              locationSlug: '',
-              activityId: '',
+              locationSlug: query?.locationSlug ?? userLocationSlug,
+              activityId: query?.activityId ?? '',
               time: query?.time ?? defaultAdvisoryRange(),
             }
           }
