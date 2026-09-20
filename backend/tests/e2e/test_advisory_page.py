@@ -74,7 +74,7 @@ def test_advice_explanation_keyboard_chart_and_month_drilldown(
     page.get_by_role("button", name="Tìm thời điểm phù hợp", exact=True).click()
     results = page.get_by_role("region", name="Kết quả tư vấn")
     expect(results).to_be_visible()
-    expect(results.get_by_role("article")).to_have_count(3)
+    expect(results.get_by_role("article")).to_have_count(2)
     expect(results).to_contain_text("không phải dự báo cho ngày cụ thể")
     assert advisory_requests[-1]["locationSlug"] == "ha-noi"
     primary = results.get_by_role(

@@ -1,14 +1,32 @@
 import type { MonthRange } from '../api/advisory';
 
-export function defaultAdvisoryRange(now = new Date()): MonthRange {
+/** Ba thông tin đủ để chạy một lượt tư vấn. */
+export interface AdvisoryQuery {
+  locationSlug: string;
+  activityId: string;
+  time: MonthRange;
+}
+
+export function vietnamYearMonth(now = new Date()): { year: number; month: number } {
   const parts = new Intl.DateTimeFormat('en', {
     timeZone: 'Asia/Ho_Chi_Minh', year: 'numeric', month: '2-digit',
   }).formatToParts(now);
-  const year = Number(parts.find(part => part.type === 'year')?.value);
-  const month = Number(parts.find(part => part.type === 'month')?.value);
+  return {
+    year: Number(parts.find(part => part.type === 'year')?.value),
+    month: Number(parts.find(part => part.type === 'month')?.value),
+  };
+}
+
+/** Khoảng gồm `count` tháng liên tiếp, bắt đầu từ tháng kế tiếp. */
+export function upcomingMonthRange(count: number, now = new Date()): MonthRange {
+  const { year, month } = vietnamYearMonth(now);
   const nextMonth = year * 12 + month;
   const format = (index: number) => `${Math.floor(index / 12)}-${String(index % 12 + 1).padStart(2, '0')}`;
-  return { startMonth: format(nextMonth), endMonth: format(nextMonth + 11) };
+  return { startMonth: format(nextMonth), endMonth: format(nextMonth + count - 1) };
+}
+
+export function defaultAdvisoryRange(now = new Date()): MonthRange {
+  return upcomingMonthRange(12, now);
 }
 
 export function validateAdvisoryRange(range: MonthRange): string | null {
