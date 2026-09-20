@@ -8,6 +8,18 @@ export interface AdvisoryQuery {
   time: MonthRange;
 }
 
+const DEFAULT_ACTIVITY_BY_LOCATION: Readonly<Record<string, string>> = {
+  'ba-ria-vung-tau': 'beach',
+  'vung-tau': 'beach',
+  'nha-trang': 'beach',
+  'phan-thiet': 'beach',
+  'phu-quoc': 'beach',
+};
+
+export function inferActivityFromLocation(locationSlug: string): string | null {
+  return DEFAULT_ACTIVITY_BY_LOCATION[locationSlug] ?? null;
+}
+
 export function vietnamYearMonth(now = new Date()): { year: number; month: number } {
   const parts = new Intl.DateTimeFormat('en', {
     timeZone: 'Asia/Ho_Chi_Minh', year: 'numeric', month: '2-digit',
@@ -55,6 +67,10 @@ export function toAdvisoryQuery(
   now = new Date(),
 ): AdvisoryQuery {
   const { time } = understanding;
+  const locationSlug = understanding.locationSlug || fallbackLocationSlug;
+  const locationActivity = understanding.locationFromQuestion
+    ? inferActivityFromLocation(locationSlug)
+    : null;
   let range = defaultAdvisoryRange(now);
 
   if (time?.kind === 'now') {
@@ -74,8 +90,8 @@ export function toAdvisoryQuery(
   }
 
   return {
-    locationSlug: understanding.locationSlug || fallbackLocationSlug,
-    activityId: understanding.activityId || 'general',
+    locationSlug,
+    activityId: understanding.activityId || locationActivity || 'general',
     time: range,
   };
 }

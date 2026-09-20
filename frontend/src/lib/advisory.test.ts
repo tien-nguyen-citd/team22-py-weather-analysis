@@ -2,6 +2,7 @@ import { describe, expect, it } from 'vitest';
 import type { QuestionUnderstanding } from '../api/nlu';
 import {
   defaultAdvisoryRange,
+  inferActivityFromLocation,
   toAdvisoryQuery,
   validateAdvisoryRange,
   vietnamToday,
@@ -71,6 +72,53 @@ describe('Quy đổi kết quả đọc câu hỏi', () => {
     }), 'ha-noi', NOW);
 
     expect(result.locationSlug).toBe('ha-noi');
+    expect(result.activityId).toBe('general');
+  });
+
+  it.each([
+    'ba-ria-vung-tau',
+    'vung-tau',
+    'nha-trang',
+    'phan-thiet',
+    'phu-quoc',
+  ])('gợi ý tắm biển khi câu hỏi chỉ nêu địa điểm %s', locationSlug => {
+    const result = toAdvisoryQuery(understanding(null, {
+      locationSlug,
+      locationFromQuestion: true,
+      activityId: null,
+    }), 'ha-noi', NOW);
+
+    expect(result.activityId).toBe('beach');
+  });
+
+  it('ưu tiên hoạt động người dùng nói rõ hơn gợi ý của địa điểm', () => {
+    const result = toAdvisoryQuery(understanding(null, {
+      locationSlug: 'vung-tau',
+      locationFromQuestion: true,
+      activityId: 'coffee',
+    }), 'ha-noi', NOW);
+
+    expect(result.activityId).toBe('coffee');
+  });
+
+  it('dùng nhu cầu chung cho địa điểm không có hoạt động đặc trưng', () => {
+    const result = toAdvisoryQuery(understanding(null, {
+      locationSlug: 'ha-noi',
+      locationFromQuestion: true,
+      activityId: null,
+    }), 'da-nang', NOW);
+
+    expect(result.activityId).toBe('general');
+    expect(inferActivityFromLocation('ha-noi')).toBeNull();
+  });
+
+  it('không suy luận từ vị trí mặc định khi câu hỏi không nhắc địa điểm', () => {
+    const result = toAdvisoryQuery(understanding(null, {
+      locationSlug: null,
+      locationFromQuestion: false,
+      activityId: null,
+    }), 'vung-tau', NOW);
+
     expect(result.activityId).toBe('general');
   });
 

@@ -11,6 +11,7 @@ import { ErrorMessage } from '../components/ErrorMessage';
 import {
   defaultAdvisoryRange,
   formatAdvisoryDate,
+  inferActivityFromLocation,
   toAdvisoryQuery,
   vietnamToday,
   type AdvisoryQuery,
@@ -29,6 +30,7 @@ export function AdvisoryPage({ locations, userLocationSlug }: AdvisoryPageProps)
   const [isAsking, setIsAsking] = useState(false);
   const [query, setQuery] = useState<AdvisoryQuery | null>(null);
   const [askedByQuestion, setAskedByQuestion] = useState(false);
+  const [activityInferredFromLocation, setActivityInferredFromLocation] = useState(false);
 
   const activities = useQuery({
     queryKey: ['advisory', 'activities'],
@@ -61,6 +63,11 @@ export function AdvisoryPage({ locations, userLocationSlug }: AdvisoryPageProps)
         today: vietnamToday(now),
       });
       setQuery(toAdvisoryQuery(understood, userLocationSlug, now));
+      setActivityInferredFromLocation(
+        understood.activityId === null
+        && understood.locationFromQuestion
+        && inferActivityFromLocation(understood.locationSlug ?? '') !== null,
+      );
       setAskedByQuestion(true);
       setShowForm(false);
     } catch {
@@ -73,6 +80,7 @@ export function AdvisoryPage({ locations, userLocationSlug }: AdvisoryPageProps)
   function runFormQuery(next: AdvisoryQuery) {
     setQuery(next);
     setAskedByQuestion(false);
+    setActivityInferredFromLocation(false);
     setShowForm(false);
   }
 
@@ -154,7 +162,9 @@ export function AdvisoryPage({ locations, userLocationSlug }: AdvisoryPageProps)
 
       {query && askedByQuestion && advice.data && !advice.isError && (
         <div className="flex flex-wrap items-center gap-x-3 gap-y-2 rounded-2xl bg-acc-soft px-4 py-3 text-sm text-ink2">
-          <span className="font-semibold text-acc">Hiểu là</span>
+          <span className="font-semibold text-acc">
+            {activityInferredFromLocation ? 'Gợi ý theo địa điểm' : 'Hiểu là'}
+          </span>
           <span>
             {locationName(query.locationSlug)} · {formatAdvisoryDate(query.time.startMonth)} –{' '}
             {formatAdvisoryDate(query.time.endMonth)} · {activityName(query.activityId)}

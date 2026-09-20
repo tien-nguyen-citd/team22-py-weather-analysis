@@ -38,7 +38,12 @@ Kết quả thời gian từ dịch vụ được quy về khoảng tháng như 
 
 Nếu thiếu một đầu khoảng thời gian, mốc còn lại được dùng cho cả hai đầu. Khoảng
 dài hơn 12 tháng được cắt còn 12 tháng đầu. Địa điểm không có trong câu hỏi dùng
-vị trí người dùng đã lưu; hoạt động không xác định dùng nhu cầu chung.
+vị trí người dùng đã lưu. Hoạt động nói rõ trong câu luôn được ưu tiên. Nếu câu
+chỉ nêu một địa điểm có hoạt động đặc trưng đã cấu hình, giao diện dùng hoạt động
+đó làm gợi ý: Vũng Tàu, Bà Rịa–Vũng Tàu, Nha Trang, Phan Thiết và Phú Quốc gợi
+ý tắm biển. Các địa điểm khác dùng nhu cầu chung để ưu tiên ít mưa và nhiệt độ
+trung bình ngày 20–28°C. Vị trí mặc định không được dùng để tự suy ra hoạt động
+khi câu hỏi không nhắc địa điểm.
 
 `now` và `dates` hiện vẫn được phân tích bằng lịch sử khí hậu của tháng tương ứng,
 không dùng dữ liệu thời tiết hiện tại hoặc dự báo ngày. Vì vậy kết quả không phải

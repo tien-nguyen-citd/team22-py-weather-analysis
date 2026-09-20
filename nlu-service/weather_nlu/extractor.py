@@ -1,3 +1,4 @@
+import unicodedata
 from datetime import date
 from typing import Protocol
 
@@ -7,6 +8,7 @@ from weather_nlu.activities import ActivityExample, ActivityKeywordMatcher
 from weather_nlu.encoder import normalize_rows
 from weather_nlu.locations import LocationMatcher
 from weather_nlu.question_info import QuestionInfo
+from weather_nlu.text import tokenize
 from weather_nlu.time_parser import parse_time
 
 
@@ -52,14 +54,19 @@ class RuleMiniLmExtractor:
         return self._example_activity_ids[int(np.argmax(similarities))]
 
     def find_activity(self, question: str, location_text: str | None) -> str | None:
+        question = unicodedata.normalize("NFC", question)
         keyword = self._keywords.find(question)
         if keyword is not None:
             return keyword.value
         if location_text:
+            location_text = unicodedata.normalize("NFC", location_text)
             question = question.replace(location_text, " ")
+        if not tokenize(question):
+            return None
         return self.classify_activity(question)
 
     def extract(self, question: str, today: date) -> QuestionInfo:
+        question = unicodedata.normalize("NFC", question)
         location = self._locations.find(question)
         location_text = location.text if location else None
         return QuestionInfo(
