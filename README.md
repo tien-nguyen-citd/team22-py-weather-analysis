@@ -1,6 +1,6 @@
 # Phân tích dữ liệu thời tiết
 
-Ứng dụng minh họa cách tổ chức frontend React và backend Python cho một sản phẩm phân tích dữ liệu thời tiết thực tế.
+Ứng dụng gồm frontend React, backend FastAPI và dịch vụ NLU đọc câu hỏi tiếng Việt.
 
 ## Yêu cầu
 
@@ -10,9 +10,9 @@
 - SQL Server Express LocalDB
 - ODBC Driver 17 hoặc 18 for SQL Server
 
-## Cài đặt
+## Setup lần đầu
 
-Cài đặt backend và khởi tạo dữ liệu mẫu:
+### Backend
 
 ```powershell
 cd backend
@@ -23,46 +23,25 @@ python -m playwright install chromium
 python -m weather_analysis.seed
 ```
 
-Lệnh seed tự chạy các migration còn thiếu rồi nạp tài khoản và 91 địa điểm mẫu.
-Các lần chạy sau không ghi đè danh sách địa điểm đã được quản trị viên nhập.
+Lệnh seed tự chạy migration và nạp tài khoản, địa điểm mẫu.
 
-Nếu database LocalDB được tạo từ phiên bản cũ và đã có bảng `users` nhưng chưa
-có bảng `alembic_version`, đánh dấu migration baseline trước khi nâng cấp:
-
-```powershell
-cd backend
-.\.venv\Scripts\Activate.ps1
-alembic stamp 0001
-alembic upgrade head
-alembic current
-```
-
-Với database mới, chỉ cần chạy `alembic upgrade head`. Có thể quay lại toàn bộ
-schema bằng `alembic downgrade base` trong môi trường phát triển hoặc kiểm thử.
-
-Cài đặt frontend trong một terminal khác:
+### Frontend
 
 ```powershell
 cd frontend
 npm install
 ```
 
-Cài đặt dịch vụ đọc câu hỏi trong một terminal khác:
+### NLU service
 
-```powershell
-cd nlu-service
-python -m venv .venv
-.\.venv\Scripts\Activate.ps1
-python -m pip install -r requirements-dev.txt
-python -m weather_nlu.download
-```
+Tab **Tư vấn** cần NLU service tại port `8002`. Setup và chạy service theo
+[hướng dẫn riêng của NLU service](nlu-service/README.md).
 
-Lần đầu tải model cần kết nối Internet. Model được lưu trong
-`nlu-service/.models`.
+## Chạy môi trường dev
 
-## Chạy ứng dụng
+Mở hai terminal từ thư mục gốc của dự án.
 
-Khởi động backend tại `http://localhost:8000`:
+Terminal 1 — backend tại `http://localhost:8000`:
 
 ```powershell
 cd backend
@@ -70,57 +49,27 @@ cd backend
 uvicorn weather_analysis.api.app:app --reload
 ```
 
-Backend cần kết nối Internet để lấy dữ liệu dự báo, chất lượng không khí, nhiệt
-độ các địa điểm và lịch sử khí hậu từ Open-Meteo. Hai tab So sánh và Lịch sử lấy
-dữ liệu đã tổng hợp qua API backend `/api/locations/compare` và
-`/api/locations/{slug}/history`; ô chọn địa điểm lấy nhiệt độ qua
-`/api/locations/temperatures`. Dữ liệu dự báo và nhiệt độ hiện tại được cache
-trong bộ nhớ theo thời gian cấu hình ở trang quản trị. Dữ liệu lịch sử theo ngày
-được lưu trong database và backend chỉ tải phần còn thiếu.
-
-Khởi động frontend tại `http://localhost:5173` trong một terminal khác:
+Terminal 2 — frontend tại `http://localhost:5173`:
 
 ```powershell
 cd frontend
 npm run dev
 ```
 
-Khởi động dịch vụ đọc câu hỏi tại `http://localhost:8002` trong một terminal
-khác:
+Khi làm việc với tab **Tư vấn**, mở thêm terminal và chạy NLU service theo
+[`nlu-service/README.md`](nlu-service/README.md#chạy-service).
 
-```powershell
-cd nlu-service
-.\.venv\Scripts\Activate.ps1
-uvicorn weather_nlu.api.app:app --port 8002 --reload
-```
-
-Ứng dụng backend và các màn hình hiện có vẫn chạy bình thường khi dịch vụ đọc
-câu hỏi tắt. Tab Tư vấn mới tự chuyển sang form nhập tay nếu không kết nối được
-dịch vụ. Khi chạy Vite ở môi trường phát triển, lỗi proxy kết nối tới port 8002
-trong console là bình thường nếu dịch vụ này đang tắt.
-
-Trang thời tiết ở `http://localhost:5173`.
-
-Trang quản trị ở `http://localhost:5173/admin/dang-nhap`, đăng nhập bằng:
+Trang quản trị: `http://localhost:5173/admin/dang-nhap`
 
 - Tên đăng nhập: `admin`
 - Mật khẩu: `adminpw`
 
-Trang quản trị cho phép tải tệp CSV mẫu và thay toàn bộ danh sách địa điểm. Tệp
-phải dùng mã hóa UTF-8 và có các cột:
-`name,slug,region_code,region_label,temp_offset,latitude,longitude,pin_order`.
-`pin_order` có thể để trống; các cột còn lại bắt buộc có dữ liệu hợp lệ.
-Tên viết tắt và tên gọi khác được quản lý trong
-`backend/data/seed/location-aliases.csv` và tự động gắn theo `slug` khi nhập.
-Với database đã có dữ liệu từ phiên bản cũ, chạy migration rồi nhập lại tệp mẫu
-ở trang quản trị để cập nhật các tên gọi này.
+Backend cần Internet để lấy dữ liệu từ Open-Meteo. Lần đầu chạy NLU service
+cũng cần Internet để tải model.
 
-## Chạy kiểm tra
+## Kiểm tra
 
-Có thể chạy cả test backend và frontend trong Testing panel của VS Code. Test
-e2e cần cài Playwright như hướng dẫn trên và chạy chậm hơn vì tự khởi động server.
-
-Kiểm tra backend:
+Backend:
 
 ```powershell
 cd backend
@@ -130,7 +79,7 @@ ruff check .
 pytest -q
 ```
 
-Kiểm tra frontend:
+Frontend:
 
 ```powershell
 cd frontend
@@ -139,18 +88,7 @@ npm run build
 npm test
 ```
 
-Kiểm tra dịch vụ đọc câu hỏi:
-
-```powershell
-cd nlu-service
-.\.venv\Scripts\Activate.ps1
-pyright
-ruff check .
-pytest -q
-pytest -m model
-```
-
-Kiểm thử giao diện:
+E2E:
 
 ```powershell
 cd backend
@@ -158,40 +96,12 @@ cd backend
 pytest tests/e2e
 ```
 
-Muốn quan sát trực tiếp các thao tác trong trình duyệt:
+Không cần bật sẵn ứng dụng khi chạy E2E. Xem thêm lệnh kiểm tra NLU trong
+[`nlu-service/README.md`](nlu-service/README.md#chạy-kiểm-tra).
 
-```powershell
-pytest tests/e2e --headed --slowmo 500
-```
+## Biến môi trường thường dùng
 
-Cần chạy `npm install` trong thư mục `frontend` trước khi kiểm thử giao diện.
-Không cần bật sẵn ứng dụng: test tự khởi động backend và frontend trên các port
-8001 và 5174, sử dụng database kiểm thử riêng rồi dọn dẹp khi kết thúc.
-
-## Cấu trúc chính
-
-- `backend/weather_analysis/api/`: các route FastAPI và schema trao đổi dữ liệu.
-- `backend/weather_analysis/clients/`: các client gọi dịch vụ dữ liệu bên thứ ba.
-- `backend/weather_analysis/services/`: nghiệp vụ xác thực, địa điểm, dự báo và phân tích khí hậu.
-- `backend/weather_analysis/repositories/`: truy cập dữ liệu qua SQLAlchemy ORM.
-- `backend/migrations/`: lịch sử thay đổi schema database bằng Alembic.
-- `backend/data/seed/`: dữ liệu mẫu cho tài khoản và địa điểm.
-- `backend/tests/`: unit test, API test và e2e test.
-- `frontend/src/api/`: mã gọi API từ trình duyệt.
-- `frontend/src/pages/`: các màn hình của ứng dụng.
-- `frontend/src/components/`: các thành phần giao diện dùng lại được.
-- `nlu-service/weather_nlu/`: API và logic đọc câu hỏi tư vấn thời tiết.
-- `nlu-service/tests/`: unit test và kiểm tra độ chính xác của model đọc câu hỏi.
-
-## Biến môi trường
-
-- `WEATHER_DB_URL`: URL kết nối SQLAlchemy. Khi không đặt, ứng dụng dùng SQL Server LocalDB.
-- `WEATHER_DB_NAME`: tên database LocalDB. Mặc định là `WeatherAnalysis`.
-- `WEATHER_DB_DIR`: thư mục chứa tệp `.mdf` và `.ldf`. Mặc định là `backend/data`.
-- `WEATHER_SESSION_SECRET`: khóa dùng để ký session cookie. Phải đặt thành một giá trị bí mật khi triển khai thật.
-- `WEATHER_API_URL`: URL backend mà Vite chuyển tiếp các request `/api` tới. Mặc định là `http://localhost:8000`.
-- `WEATHER_NLU_URL`: URL dịch vụ đọc câu hỏi mà Vite chuyển tiếp các request `/nlu` tới. Mặc định là `http://localhost:8002`.
-
-Khi dùng SQL Server thật, đặt `WEATHER_DB_URL` theo dạng
-`mssql+pyodbc://user:password@server/WeatherAnalysis?driver=ODBC+Driver+18+for+SQL+Server&TrustServerCertificate=yes`.
-Database trên server thật cần được tạo trước khi chạy ứng dụng.
+- `WEATHER_DB_URL`: URL kết nối SQLAlchemy; mặc định dùng SQL Server LocalDB.
+- `WEATHER_SESSION_SECRET`: khóa ký session cookie; bắt buộc đổi khi triển khai thật.
+- `WEATHER_API_URL`: backend cho Vite proxy; mặc định `http://localhost:8000`.
+- `WEATHER_NLU_URL`: NLU service cho Vite proxy; mặc định `http://localhost:8002`.

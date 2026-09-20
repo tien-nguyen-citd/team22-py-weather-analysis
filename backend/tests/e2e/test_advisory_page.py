@@ -1,184 +1,152 @@
-from datetime import date
-from pathlib import Path
-from typing import Any, cast
+from typing import Any
 
 from playwright.sync_api import Page, Route, expect
 import pytest
 
-from tests.advisory_helpers import make_history
-from weather_analysis.advisory.candidates import normalize_request
-from weather_analysis.advisory.service import build_advice
-from weather_analysis.api.advisory_schemas import AdviceRequest, AdviceResponse
-from weather_analysis.services.climate_service import calculate_climate_period
+from tests.e2e.advisory_fixtures import (  # noqa: F401
+    advisory_requests,
+    request_payload,
+)
 
 
-def request_payload(route: Route) -> dict[str, Any]:
-    payload = route.request.post_data_json
-    assert isinstance(payload, dict)
-    return cast(dict[str, Any], payload)
-
-
-def advice_response(
-    payload: dict[str, Any], low_suitability: bool = False
-) -> dict[str, Any]:
-    today = date(2026, 9, 20)
-    period = calculate_climate_period(today)
-    request = normalize_request(
-        AdviceRequest.model_validate(payload).to_request(), today
-    )
-
-    def weather(day: date) -> tuple[float, float]:
-        if low_suitability:
-            return 42, 10
-        return (22, 0) if day.month <= 3 else (30, 5)
-
-    return AdviceResponse.model_validate(
-        build_advice(request, make_history(period, weather), period)
-    ).model_dump(mode="json", by_alias=True)
+SAMPLE_TRAVEL = "Mùa này đi Phú Quốc có hợp không?"
+FREE_QUESTION = "Đám cưới tháng mấy thì đẹp nhất?"
 
 
 @pytest.fixture
-def advisory_requests(page: Page) -> list[dict[str, Any]]:
+def nlu_requests(page: Page) -> list[dict[str, Any]]:
     requests: list[dict[str, Any]] = []
-    # Luồng tư vấn phải hoạt động ngay cả khi dự báo hiện tại lỗi.
     page.route(
-        "**/api/locations/*/forecast",
-        lambda route: route.fulfill(
-            status=502, json={"detail": "Không lấy được dự báo"}
-        ),
+        "**/nlu/health",
+        lambda route: route.fulfill(json={"status": "ok", "extractor": "test"}),
     )
-    page.route("**/api/locations/temperatures*", lambda route: route.fulfill(json={}))
 
-    def respond(route: Route) -> None:
+    def understand(route: Route) -> None:
         payload = request_payload(route)
         requests.append(payload)
-        route.fulfill(json=advice_response(payload))
+        if payload["question"] == SAMPLE_TRAVEL:
+            route.fulfill(
+                json={
+                    "locationSlug": "phu-quoc",
+                    "locationFromQuestion": True,
+                    "activityId": "travel",
+                    "time": {
+                        "kind": "months",
+                        "startDate": "2026-09-01",
+                        "endDate": "2026-11-30",
+                    },
+                }
+            )
+            return
+        route.fulfill(
+            json={
+                "locationSlug": None,
+                "locationFromQuestion": False,
+                "activityId": "wedding",
+                "time": {
+                    "kind": "best_time",
+                    "startDate": "2027-01-01",
+                    "endDate": "2027-03-31",
+                },
+            }
+        )
 
-    page.route("**/api/advisory", respond)
+    page.route("**/nlu/understand", understand)
     return requests
 
 
-def fill_request(page: Page) -> None:
-    page.get_by_label("Hoạt động", exact=True).select_option("wedding")
-    page.get_by_label("Từ tháng", exact=True).fill("2027-01")
-    page.get_by_label("Đến tháng", exact=True).fill("2027-03")
-
-
-def test_advice_explanation_keyboard_chart_and_month_drilldown(
+def test_chat_landing_has_no_location_bar(
     page: Page,
-    advisory_requests: list[dict[str, Any]],
-    tmp_path: Path,
+    advisory_requests: list[dict[str, Any]],  # noqa: F811
+    nlu_requests: list[dict[str, Any]],
 ) -> None:
     page.goto("/ha-noi/tu-van")
-    fill_request(page)
-    page.get_by_role("button", name="Tìm thời điểm phù hợp", exact=True).click()
+    expect(page.get_by_role("heading", name="Bạn cần tư vấn thời tiết?")).to_be_visible()
+    expect(page.get_by_role("group", name="Địa điểm yêu thích và gợi ý")).to_have_count(0)
+    assert advisory_requests == []
+    assert nlu_requests == []
+
+
+def test_sample_question_gives_advice_and_shows_what_was_understood(
+    page: Page,
+    advisory_requests: list[dict[str, Any]],  # noqa: F811
+    nlu_requests: list[dict[str, Any]],
+) -> None:
+    page.goto("/ha-noi/tu-van")
+    page.get_by_role("button", name=SAMPLE_TRAVEL, exact=True).click()
+
     results = page.get_by_role("region", name="Kết quả tư vấn")
     expect(results).to_be_visible()
     expect(results.get_by_role("article")).to_have_count(2)
-    expect(results).to_contain_text("không phải dự báo cho ngày cụ thể")
+
+    assert nlu_requests[-1]["currentLocationSlug"] == "ha-noi"
+    assert len(nlu_requests[-1]["today"]) == 10
+    assert advisory_requests[-1] == {
+        "locationSlug": "phu-quoc",
+        "activityId": "travel",
+        "time": {"startMonth": "2026-09", "endMonth": "2026-11"},
+        "topK": 2,
+    }
+
+    understood = page.get_by_text("Hiểu là", exact=True).locator("..")
+    expect(understood).to_contain_text("Phú Quốc")
+    expect(understood).to_contain_text("Du lịch")
+
+
+def test_free_question_uses_the_current_location_when_nlu_returns_none(
+    page: Page,
+    advisory_requests: list[dict[str, Any]],  # noqa: F811
+    nlu_requests: list[dict[str, Any]],
+) -> None:
+    page.goto("/ha-noi/tu-van")
+    page.get_by_label("Câu hỏi của bạn", exact=True).fill(FREE_QUESTION)
+    page.get_by_role("button", name="Gửi câu hỏi", exact=True).click()
+
+    expect(page.get_by_role("region", name="Kết quả tư vấn")).to_be_visible()
+    assert nlu_requests[-1]["question"] == FREE_QUESTION
     assert advisory_requests[-1]["locationSlug"] == "ha-noi"
-    primary = results.get_by_role(
-        "article", name="Đề xuất chính: Tháng 01/2027", exact=True
-    )
-    primary.get_by_text("Vì sao chọn?", exact=True).click()
-    expect(primary).to_contain_text("100 × 80% = 80 điểm")
-    february = results.get_by_role("button", name="Tháng 02/2027: 100 điểm", exact=True)
-    february.focus()
-    page.keyboard.press("Enter")
-    expect(february).to_have_attribute("aria-pressed", "true")
-    expect(
-        results.get_by_role("heading", name="Tháng 02/2027 · Hạng 2/3")
-    ).to_be_visible()
-    page.screenshot(path=str(tmp_path / "advisory-desktop.png"), full_page=True)
-    primary.get_by_role("button", name="Xem giai đoạn trong tháng này").click()
-    expect(
-        results.get_by_role("heading", name="Đầu tháng 01/2027", exact=True)
-    ).to_be_visible()
+    assert advisory_requests[-1]["activityId"] == "wedding"
     assert advisory_requests[-1]["time"] == {
         "startMonth": "2027-01",
-        "endMonth": "2027-01",
+        "endMonth": "2027-03",
     }
-    page.get_by_label("Hoạt động", exact=True).select_option("running")
-    expect(results).not_to_be_visible()
 
 
-def test_validation_presets_and_mobile_layout(
+def test_unavailable_nlu_opens_the_manual_form_without_a_back_button(
     page: Page,
-    advisory_requests: list[dict[str, Any]],
-    tmp_path: Path,
+    advisory_requests: list[dict[str, Any]],  # noqa: F811
 ) -> None:
-    page.set_viewport_size({"width": 390, "height": 844})
+    page.route(
+        "**/nlu/health",
+        lambda route: route.fulfill(
+            status=503, json={"detail": "NLU service không khả dụng"}
+        ),
+    )
     page.goto("/ha-noi/tu-van")
-    fill_request(page)
-    page.get_by_label("Đến tháng", exact=True).fill("2028-01")
-    page.get_by_role("button", name="Tìm thời điểm phù hợp", exact=True).click()
-    expect(page.get_by_role("alert")).to_contain_text("1 đến 12 tháng")
+
+    form = page.get_by_role("region", name="Điền tiêu chí tư vấn")
+    expect(form).to_be_visible()
+    expect(page.get_by_role("heading", name="Bạn cần tư vấn thời tiết?")).to_have_count(0)
+    expect(form.get_by_role("button", name="Quay lại hỏi bằng câu")).to_have_count(0)
+    expect(form.get_by_label("Địa điểm", exact=True)).to_have_value("ha-noi")
     assert advisory_requests == []
-    page.get_by_role("button", name="Du lịch Phú Quốc", exact=True).click()
-    expect(page).to_have_url("/phu-quoc/tu-van?activity=travel")
-    expect(page.get_by_label("Hoạt động", exact=True)).to_have_value("travel")
-    page.get_by_role("button", name="Tìm thời điểm phù hợp", exact=True).click()
-    results = page.get_by_role("region", name="Kết quả tư vấn")
-    expect(results).to_be_visible()
-    assert advisory_requests[-1]["locationSlug"] == "phu-quoc"
-    assert advisory_requests[-1]["activityId"] == "travel"
-    assert page.evaluate("document.documentElement.scrollWidth <= window.innerWidth")
-    page.screenshot(path=str(tmp_path / "advisory-mobile.png"), full_page=True)
 
 
-def test_error_retry_and_low_suitability(
-    page: Page, advisory_requests: list[dict[str, Any]]
+def test_edit_opens_the_form_with_the_values_just_used(
+    page: Page,
+    advisory_requests: list[dict[str, Any]],  # noqa: F811
+    nlu_requests: list[dict[str, Any]],
 ) -> None:
-    page.unroute("**/api/advisory")
-    attempts = 0
-
-    def respond(route: Route) -> None:
-        nonlocal attempts
-        attempts += 1
-        if attempts == 1:
-            route.fulfill(status=502, json={"detail": "Dữ liệu lịch sử chưa đủ ngày"})
-        else:
-            route.fulfill(
-                json=advice_response(request_payload(route), low_suitability=True)
-            )
-
-    page.route("**/api/advisory", respond)
     page.goto("/ha-noi/tu-van")
-    fill_request(page)
-    page.get_by_role("button", name="Tìm thời điểm phù hợp", exact=True).click()
-    expect(page.get_by_text("Dữ liệu lịch sử chưa đủ ngày", exact=True)).to_be_visible()
-    page.get_by_role("button", name="Thử lại", exact=True).click()
-    expect(page.get_by_role("region", name="Kết quả tư vấn")).to_contain_text(
-        "ít phù hợp"
-    )
-    assert attempts == 2
+    page.get_by_role("button", name=SAMPLE_TRAVEL, exact=True).click()
+    expect(page.get_by_role("region", name="Kết quả tư vấn")).to_be_visible()
 
+    page.get_by_role("button", name="Sửa", exact=True).click()
+    form = page.get_by_role("region", name="Điền tiêu chí tư vấn")
+    expect(form).to_be_visible()
+    expect(form.get_by_label("Địa điểm", exact=True)).to_have_value("phu-quoc")
+    expect(form.get_by_label("Hoạt động", exact=True)).to_have_value("travel")
 
-def test_location_change_cancels_pending_advice(
-    page: Page, advisory_requests: list[dict[str, Any]]
-) -> None:
-    page.unroute("**/api/advisory")
-    pending: list[Route] = []
-
-    def respond(route: Route) -> None:
-        if request_payload(route)["locationSlug"] == "ha-noi":
-            pending.append(route)
-        else:
-            route.fulfill(json=advice_response(request_payload(route)))
-
-    page.route("**/api/advisory", respond)
-    page.goto("/ha-noi/tu-van")
-    fill_request(page)
-    with page.expect_request("**/api/advisory"):
-        page.get_by_role("button", name="Tìm thời điểm phù hợp", exact=True).click()
-    expect(page.get_by_role("status")).to_contain_text("Lần đầu ở một địa điểm")
-    with page.expect_event(
-        "requestfailed", predicate=lambda request: request.url.endswith("/api/advisory")
-    ):
-        page.get_by_role("button", name="Cắm trại Đà Lạt", exact=True).click()
-    expect(page.get_by_role("region", name="Kết quả tư vấn")).not_to_be_visible()
-    page.get_by_role("button", name="Tìm thời điểm phù hợp", exact=True).click()
-    expect(page.get_by_role("region", name="Kết quả tư vấn")).to_contain_text(
-        "Cắm trại, leo núi, dã ngoại · Đà Lạt"
-    )
-    assert len(pending) == 1
+    form.get_by_role("button", name="Quay lại hỏi bằng câu", exact=True).click()
+    expect(page.get_by_role("heading", name="Bạn cần tư vấn thời tiết?")).to_be_visible()
+    assert nlu_requests[-1]["question"] == SAMPLE_TRAVEL

@@ -13,7 +13,6 @@ import { PlannerPage } from './pages/PlannerPage';
 import { ComparePage } from './pages/ComparePage';
 import { HistoryPage } from './pages/HistoryPage';
 import { AdvisoryPage } from './pages/AdvisoryPage';
-import { AdvisoryPageV2 } from './pages/AdvisoryPageV2';
 import { WeatherSkeleton } from './components/WeatherSkeleton';
 import { ErrorMessage } from './components/ErrorMessage';
 import {
@@ -67,7 +66,7 @@ export const NangMuaApp: React.FC = () => {
   );
 
   // Selected tab
-  const validPages: PageTab[] = ['tong-quan', 'khung-gio', 'so-sanh', 'lich-su', 'tu-van', 'tu-van-v2'];
+  const validPages: PageTab[] = ['tong-quan', 'khung-gio', 'so-sanh', 'lich-su', 'tu-van'];
   const currentPage: PageTab = validPages.includes(page as PageTab)
     ? (page as PageTab)
     : 'tong-quan';
@@ -181,7 +180,7 @@ export const NangMuaApp: React.FC = () => {
         <Header
           currentPage={currentPage}
           onSelectPage={handleSelectPage}
-          updatedAt={currentPage === 'tu-van' || currentPage === 'tu-van-v2' ? 'Tư vấn từ lịch sử khí hậu' : formatUpdatedAt(weatherData?.updatedAt)}
+          updatedAt={currentPage === 'tu-van' ? 'Tư vấn từ lịch sử khí hậu' : formatUpdatedAt(weatherData?.updatedAt)}
           isFetching={isFetching || climateIsFetching > 0 || advisoryIsFetching > 0}
           onRefresh={() => {
             void refetch();
@@ -190,8 +189,8 @@ export const NangMuaApp: React.FC = () => {
           }}
         />
 
-        {/* Common Location Bar — trang Tư vấn V2 tự chọn địa điểm nên không dùng */}
-        {currentPage !== 'tu-van-v2' && (
+        {/* Common Location Bar — trang Tư vấn tự chọn địa điểm nên không dùng */}
+        {currentPage !== 'tu-van' && (
           <LocationBar
             currentLocation={currentLocation}
             locations={locations}
@@ -203,15 +202,13 @@ export const NangMuaApp: React.FC = () => {
         )}
 
         {/* Page Content */}
-        {currentPage === 'tu-van-v2' ? (
+        {currentPage === 'tu-van' ? (
           <main>
-            <AdvisoryPageV2
+            <AdvisoryPage
               locations={locations}
               currentLocationSlug={currentLocation.slug}
             />
           </main>
-        ) : currentPage === 'tu-van' ? (
-          <main><AdvisoryPage key={`${currentLocation.slug}:${routerLocation.search}`} currentLocation={currentLocation} locations={locations} /></main>
         ) : currentPage === 'so-sanh' ? (
           <main>
             <ComparePage

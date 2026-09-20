@@ -66,9 +66,9 @@ export function AdvisoryQueryForm({
       <form className="mt-5" onSubmit={submit} noValidate>
         <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-[1fr_1.2fr_1fr_1fr_auto] lg:items-end">
           <div className="min-w-0 text-sm font-semibold">
-            <label htmlFor="advisory-v2-location">Địa điểm</label>
+            <label htmlFor="advisory-query-location">Địa điểm</label>
             <select
-              id="advisory-v2-location"
+              id="advisory-query-location"
               className={FIELD_CLASS}
               value={query.locationSlug}
               onChange={event => setQuery({ ...query, locationSlug: event.target.value })}
@@ -82,9 +82,9 @@ export function AdvisoryQueryForm({
           </div>
 
           <div className="min-w-0 text-sm font-semibold">
-            <label htmlFor="advisory-v2-activity">Hoạt động</label>
+            <label htmlFor="advisory-query-activity">Hoạt động</label>
             <select
-              id="advisory-v2-activity"
+              id="advisory-query-activity"
               className={FIELD_CLASS}
               value={query.activityId}
               onChange={event => setQuery({ ...query, activityId: event.target.value })}
@@ -99,15 +99,15 @@ export function AdvisoryQueryForm({
           </div>
 
           <div className="min-w-0 text-sm font-semibold">
-            <label htmlFor="advisory-v2-start">Từ tháng</label>
+            <label htmlFor="advisory-query-start">Từ tháng</label>
             <input
-              id="advisory-v2-start"
+              id="advisory-query-start"
               type="month"
               className={FIELD_CLASS}
               value={query.time.startMonth}
               min="0001-01"
               max="9999-12"
-              aria-describedby={validationError ? 'advisory-v2-error' : 'advisory-v2-hint'}
+              aria-describedby={validationError ? 'advisory-query-error' : 'advisory-query-hint'}
               aria-invalid={!!validationError}
               onChange={event =>
                 setQuery({ ...query, time: { ...query.time, startMonth: event.target.value } })
@@ -116,15 +116,15 @@ export function AdvisoryQueryForm({
           </div>
 
           <div className="min-w-0 text-sm font-semibold">
-            <label htmlFor="advisory-v2-end">Đến tháng</label>
+            <label htmlFor="advisory-query-end">Đến tháng</label>
             <input
-              id="advisory-v2-end"
+              id="advisory-query-end"
               type="month"
               className={FIELD_CLASS}
               value={query.time.endMonth}
               min="0001-01"
               max="9999-12"
-              aria-describedby={validationError ? 'advisory-v2-error' : 'advisory-v2-hint'}
+              aria-describedby={validationError ? 'advisory-query-error' : 'advisory-query-hint'}
               aria-invalid={!!validationError}
               onChange={event =>
                 setQuery({ ...query, time: { ...query.time, endMonth: event.target.value } })
@@ -141,11 +141,11 @@ export function AdvisoryQueryForm({
           </button>
         </div>
 
-        <p id="advisory-v2-hint" className="mt-3 text-xs text-m1">
+        <p id="advisory-query-hint" className="mt-3 text-xs text-m1">
           Chọn tối đa 12 tháng. Với khoảng 1–2 tháng, kết quả chi tiết đến đầu, giữa và cuối tháng.
         </p>
         {validationError && (
-          <p id="advisory-v2-error" role="alert" className="mt-3 text-sm text-red-700">
+          <p id="advisory-query-error" role="alert" className="mt-3 text-sm text-red-700">
             {validationError}
           </p>
         )}
