@@ -6,7 +6,7 @@ from fastapi.testclient import TestClient
 
 from weather_nlu.api.app import app
 from weather_nlu.api.dependencies import get_extractor, get_reference_date
-from weather_nlu.question_info import QuestionInfo, TimeKind, TimeSlot
+from weather_nlu.question_info import Intent, QuestionInfo, TimeKind, TimeSlot
 
 
 class FakeExtractor:
@@ -26,6 +26,13 @@ class FakeExtractor:
                     date(2026, 11, 30),
                 ),
                 activity_id="travel",
+            )
+        if question == "Tháng 12 đi biển ở đâu?":
+            return QuestionInfo(
+                location_slug=None,
+                time=TimeSlot(TimeKind.MONTHS, date(2026, 12, 1), date(2026, 12, 31)),
+                activity_id="beach",
+                intent=Intent.FIND_PLACE,
             )
         return QuestionInfo(location_slug=None, time=None, activity_id=None)
 
@@ -67,7 +74,16 @@ def test_understand_returns_all_extracted_information(client: TestClient) -> Non
             "startDate": "2026-09-01",
             "endDate": "2026-11-30",
         },
+        "intent": "find_time",
     }
+
+
+def test_understand_returns_place_intent(client: TestClient) -> None:
+    response = client.post("/nlu/understand", json={"question": "Tháng 12 đi biển ở đâu?"})
+
+    assert response.status_code == 200
+    assert response.json()["intent"] == "find_place"
+    assert response.json()["activityId"] == "beach"
 
 
 def test_understand_falls_back_to_current_location(client: TestClient) -> None:

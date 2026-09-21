@@ -5,12 +5,14 @@ import pytest
 
 from tests.e2e.advisory_fixtures import (  # noqa: F401
     advisory_requests,
+    destination_requests,
     request_payload,
 )
 
 
 SAMPLE_TRAVEL = "Mùa này đi Phú Quốc có hợp không?"
 FREE_QUESTION = "Đám cưới tháng mấy thì đẹp nhất?"
+PLACE_QUESTION = "Tháng 12 đi biển ở đâu?"
 
 
 @pytest.fixture
@@ -35,6 +37,22 @@ def nlu_requests(page: Page) -> list[dict[str, Any]]:
                         "startDate": "2026-09-01",
                         "endDate": "2026-11-30",
                     },
+                    "intent": "find_time",
+                }
+            )
+            return
+        if payload["question"] == PLACE_QUESTION:
+            route.fulfill(
+                json={
+                    "locationSlug": "ha-noi",
+                    "locationFromQuestion": False,
+                    "activityId": "beach",
+                    "time": {
+                        "kind": "months",
+                        "startDate": "2026-12-01",
+                        "endDate": "2026-12-31",
+                    },
+                    "intent": "find_place",
                 }
             )
             return
@@ -48,6 +66,7 @@ def nlu_requests(page: Page) -> list[dict[str, Any]]:
                     "startDate": "2027-01-01",
                     "endDate": "2027-03-31",
                 },
+                "intent": "find_time",
             }
         )
 
@@ -110,6 +129,30 @@ def test_free_question_uses_the_current_location_when_nlu_returns_none(
         "startMonth": "2027-01",
         "endMonth": "2027-03",
     }
+
+
+def test_place_question_shows_destination_ranking(
+    page: Page,
+    advisory_requests: list[dict[str, Any]],  # noqa: F811
+    destination_requests: list[dict[str, Any]],  # noqa: F811
+    nlu_requests: list[dict[str, Any]],
+) -> None:
+    page.goto("/ha-noi/tu-van")
+    page.get_by_label("Câu hỏi của bạn", exact=True).fill(PLACE_QUESTION)
+    page.get_by_role("button", name="Gửi câu hỏi", exact=True).click()
+
+    ranking = page.get_by_role("region", name="Xếp hạng điểm đến")
+    expect(ranking).to_be_visible()
+    expect(ranking.get_by_role("heading", name="Phú Quốc")).to_be_visible()
+    expect(page.get_by_role("region", name="Kết quả tư vấn")).to_have_count(0)
+
+    understood = page.get_by_text("Hiểu là", exact=True).locator("..")
+    expect(understood).to_contain_text("Tìm điểm đến")
+    expect(understood).to_contain_text("Tháng 12/2026")
+    expect(understood).to_contain_text("Tắm biển")
+    assert nlu_requests[-1]["question"] == PLACE_QUESTION
+    assert destination_requests[-1] == {"month": "2026-12", "activityId": "beach"}
+    assert advisory_requests == []
 
 
 def test_saved_user_location_is_independent_from_viewed_location(

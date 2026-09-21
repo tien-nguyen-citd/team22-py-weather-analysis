@@ -2,6 +2,8 @@ import { requestJson } from './client';
 
 export type NluTimeKind = 'now' | 'dates' | 'months' | 'best_time';
 
+export type NluIntent = 'find_place' | 'find_time';
+
 export interface NluTimeSlot {
   kind: NluTimeKind;
   startDate: string | null;
@@ -19,6 +21,7 @@ export interface QuestionUnderstanding {
   locationFromQuestion: boolean;
   activityId: string | null;
   time: NluTimeSlot | null;
+  intent: NluIntent;
 }
 
 export interface NluHealth {

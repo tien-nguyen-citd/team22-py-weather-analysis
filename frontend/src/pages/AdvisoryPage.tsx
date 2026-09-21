@@ -7,6 +7,7 @@ import { AdvisoryChatBox } from '../components/AdvisoryChatBox';
 import { AdvisoryPageFooter } from '../components/AdvisoryPageFooter';
 import { AdvisoryQueryForm } from '../components/AdvisoryQueryForm';
 import { AdvisoryResults } from '../components/AdvisoryResults';
+import { DestinationRanking } from '../components/DestinationRanking';
 import { ErrorMessage } from '../components/ErrorMessage';
 import {
   defaultAdvisoryRange,
@@ -16,6 +17,7 @@ import {
   vietnamToday,
   type AdvisoryQuery,
 } from '../lib/advisory';
+import { formatMonthTitle, toDestinationQuery, type DestinationQuery } from '../lib/destinations';
 import type { LocationItem } from '../types';
 
 const TOP_K = 2;
@@ -29,6 +31,7 @@ export function AdvisoryPage({ locations, userLocationSlug }: AdvisoryPageProps)
   const [showForm, setShowForm] = useState(false);
   const [isAsking, setIsAsking] = useState(false);
   const [query, setQuery] = useState<AdvisoryQuery | null>(null);
+  const [destinationQuery, setDestinationQuery] = useState<DestinationQuery | null>(null);
   const [askedByQuestion, setAskedByQuestion] = useState(false);
   const [activityInferredFromLocation, setActivityInferredFromLocation] = useState(false);
 
@@ -62,12 +65,18 @@ export function AdvisoryPage({ locations, userLocationSlug }: AdvisoryPageProps)
         currentLocationSlug: userLocationSlug,
         today: vietnamToday(now),
       });
-      setQuery(toAdvisoryQuery(understood, userLocationSlug, now));
-      setActivityInferredFromLocation(
-        understood.activityId === null
-        && understood.locationFromQuestion
-        && inferActivityFromLocation(understood.locationSlug ?? '') !== null,
-      );
+      if (understood.intent === 'find_place') {
+        setDestinationQuery(toDestinationQuery(understood, now));
+        setQuery(null);
+      } else {
+        setDestinationQuery(null);
+        setQuery(toAdvisoryQuery(understood, userLocationSlug, now));
+        setActivityInferredFromLocation(
+          understood.activityId === null
+          && understood.locationFromQuestion
+          && inferActivityFromLocation(understood.locationSlug ?? '') !== null,
+        );
+      }
       setAskedByQuestion(true);
       setShowForm(false);
     } catch {
@@ -79,6 +88,7 @@ export function AdvisoryPage({ locations, userLocationSlug }: AdvisoryPageProps)
 
   function runFormQuery(next: AdvisoryQuery) {
     setQuery(next);
+    setDestinationQuery(null);
     setAskedByQuestion(false);
     setActivityInferredFromLocation(false);
     setShowForm(false);
@@ -115,8 +125,11 @@ export function AdvisoryPage({ locations, userLocationSlug }: AdvisoryPageProps)
           initial={
             {
               locationSlug: query?.locationSlug ?? userLocationSlug,
-              activityId: query?.activityId ?? '',
-              time: query?.time ?? defaultAdvisoryRange(),
+              activityId: query?.activityId ?? destinationQuery?.activityId ?? '',
+              time: query?.time
+                ?? (destinationQuery
+                  ? { startMonth: destinationQuery.month, endMonth: destinationQuery.month }
+                  : defaultAdvisoryRange()),
             }
           }
           onSubmit={runFormQuery}
@@ -187,6 +200,26 @@ export function AdvisoryPage({ locations, userLocationSlug }: AdvisoryPageProps)
           locationName={locationName(query.locationSlug)}
           onExploreMonth={exploreMonth}
         />
+      )}
+
+      {destinationQuery && (
+        <>
+          <div className="flex flex-wrap items-center gap-x-3 gap-y-2 rounded-2xl bg-acc-soft px-4 py-3 text-sm text-ink2">
+            <span className="font-semibold text-acc">Hiểu là</span>
+            <span>
+              Tìm điểm đến · {formatMonthTitle(destinationQuery.month)} · {activityName(destinationQuery.activityId)}
+            </span>
+            <button
+              type="button"
+              onClick={() => setShowForm(true)}
+              className="focus-ring ml-auto inline-flex items-center gap-1.5 rounded-lg px-2 py-1 font-semibold text-acc hover:bg-card"
+            >
+              <PencilLine size={14} aria-hidden="true" />
+              Sửa
+            </button>
+          </div>
+          <DestinationRanking month={destinationQuery.month} activityId={destinationQuery.activityId} />
+        </>
       )}
 
       {activities.data && <AdvisoryPageFooter activities={activities.data} />}

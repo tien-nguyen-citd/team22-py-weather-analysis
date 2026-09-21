@@ -1,7 +1,7 @@
 # Dịch vụ đọc câu hỏi thời tiết
 
-Service đọc một câu hỏi tiếng Việt và trích xuất địa điểm, thời gian và hoạt động
-để frontend dùng cho luồng tư vấn thời tiết. Service chạy độc lập với backend tại
+Service đọc một câu hỏi tiếng Việt và trích xuất địa điểm, thời gian, hoạt động
+và ý định để frontend dùng cho luồng tư vấn thời tiết. Service chạy độc lập với backend tại
 port `8002` và không lưu ngữ cảnh giữa các câu hỏi.
 
 ## Cài đặt
@@ -78,6 +78,38 @@ trước khi chạy `pytest -m model`.
 
 Khi câu hỏi có nhiều cụm thời gian, thứ tự ưu tiên là: hỏi thời điểm tốt nhất,
 khoảng thời gian cụ thể, rồi hiện tại.
+
+## Quy ước phân loại ý định
+
+Trường `intent` cho biết người dùng muốn tìm gì để giao diện gọi đúng API tư vấn.
+
+| Intent | Ví dụ | Giao diện xử lý |
+| --- | --- | --- |
+| `find_place` | Tháng 12 đi biển ở đâu? | Xếp hạng điểm đến trong tháng |
+| `find_time` | Tháng nào đi Đà Lạt đẹp? | Tư vấn thời điểm tại một địa điểm |
+
+Service xét lần lượt các bước sau và dừng ở bước đầu tiên có kết quả:
+
+1. Câu hỏi nêu một địa điểm trong danh mục thì là `find_time`.
+2. Câu hỏi chứa từ khóa của một intent trong `data/intents.csv`, ví dụ "ở đâu",
+   "tỉnh nào", thì lấy intent đó. Từ khóa được so khớp như từ khóa hoạt động:
+   "đâu" không khớp với "đầu" khi câu có dấu, câu gõ không dấu vẫn khớp.
+3. Câu hỏi tìm thời điểm tốt nhất (`best_time`), ví dụ "tháng mấy", "khi nào",
+   thì là `find_time`.
+4. Các câu còn lại lấy intent của câu mẫu gần nghĩa nhất trong
+   `data/intent-examples.csv` theo embedding MiniLM.
+
+Khi không đọc được câu hỏi, service trả `find_time`. Mỗi câu hỏi được encode tối
+đa một lần; vector này dùng chung cho cả hoạt động và ý định.
+
+Để thêm một intent mới:
+
+1. Thêm một dòng vào `data/intents.csv` với `id`, `name` và các từ khóa cách nhau
+   bằng dấu `;`. Có thể để trống cột từ khóa.
+2. Thêm giá trị tương ứng vào `Intent` trong `weather_nlu/question_info.py`.
+3. Thêm câu mẫu vào `data/intent-examples.csv`, nên có cả câu không chứa từ khóa.
+4. Gán nhãn intent cho các câu liên quan trong `data/questions.csv` rồi chạy
+   `pytest -m model` để kiểm tra độ chính xác.
 
 ## Dữ liệu dùng chung và giới hạn
 

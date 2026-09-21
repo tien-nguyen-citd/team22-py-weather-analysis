@@ -4,7 +4,7 @@ from typing import Literal, Self
 from pydantic import BaseModel, ConfigDict, Field, StrictStr, field_validator
 from pydantic.alias_generators import to_camel
 
-from weather_nlu.question_info import TimeKind, TimeSlot
+from weather_nlu.question_info import Intent, TimeKind, TimeSlot
 
 
 class CamelResponse(BaseModel):
@@ -45,6 +45,7 @@ class UnderstandResponse(CamelResponse):
     location_from_question: bool
     activity_id: str | None
     time: TimeSlotResponse | None
+    intent: Intent
 
 
 class HealthResponse(CamelResponse):

@@ -10,6 +10,11 @@ class TimeKind(StrEnum):
     BEST_TIME = "best_time"  # tháng mấy, khi nào → tìm thời điểm phù hợp nhất
 
 
+class Intent(StrEnum):
+    FIND_PLACE = "find_place"  # Tháng 12 đi biển ở đâu? → xếp hạng điểm đến
+    FIND_TIME = "find_time"  # Tháng nào đi Đà Lạt đẹp? → tư vấn thời điểm tại một nơi
+
+
 @dataclass(frozen=True)
 class TimeSlot:
     """Khoảng thời gian người dùng hỏi.
@@ -25,8 +30,9 @@ class TimeSlot:
 
 @dataclass(frozen=True)
 class QuestionInfo:
-    """Ba thông tin cần để phân tích thời tiết cho một câu hỏi."""
+    """Bốn thông tin cần để phân tích thời tiết cho một câu hỏi."""
 
     location_slug: str | None  # slug trong locations.csv
     time: TimeSlot | None
     activity_id: str | None  # id trong activities.csv
+    intent: Intent = Intent.FIND_TIME  # id trong intents.csv

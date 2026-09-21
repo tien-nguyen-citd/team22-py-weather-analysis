@@ -117,7 +117,7 @@ def test_activity_changes_winner_and_candidate_set_does_not_change_score() -> No
         if day.month == 1:
             return 22.0, 0.0 if day.day <= 15 else 2.0
         if day.month == 2:
-            return 30.0, 0.0
+            return 38.0, 0.0
         return 40.0, 2.0
 
     days = make_history(PERIOD, weather)
@@ -125,9 +125,9 @@ def test_activity_changes_winner_and_candidate_set_does_not_change_score() -> No
         AdvisoryRequest("ha-noi", MonthRange("2027-01", "2027-03"), "wedding"), TODAY
     )
     wedding = build_advice(request, days, PERIOD)
-    running = build_advice(replace(request, activity_id="running"), days, PERIOD)
+    general = build_advice(replace(request, activity_id="general"), days, PERIOD)
     assert wedding.recommendations[0].window.start_date.month == 2
-    assert running.recommendations[0].window.start_date.month == 1
+    assert general.recommendations[0].window.start_date.month == 1
     extended = build_advice(
         replace(request, time=MonthRange("2027-01", "2027-04")), days, PERIOD
     )

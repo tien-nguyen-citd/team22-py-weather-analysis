@@ -12,4 +12,6 @@ LOCATION_ALIASES_PATH = SEED_DIR / "location-aliases.csv"
 
 ACTIVITIES_PATH = DATA_DIR / "activities.csv"
 ACTIVITY_EXAMPLES_PATH = DATA_DIR / "activity-examples.csv"
+INTENTS_PATH = DATA_DIR / "intents.csv"
+INTENT_EXAMPLES_PATH = DATA_DIR / "intent-examples.csv"
 QUESTIONS_PATH = DATA_DIR / "questions.csv"

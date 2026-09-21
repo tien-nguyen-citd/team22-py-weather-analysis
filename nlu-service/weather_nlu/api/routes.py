@@ -29,6 +29,7 @@ def understand(
         location_from_question=location_from_question,
         activity_id=result.activity_id,
         time=TimeSlotResponse.from_slot(result.time) if result.time else None,
+        intent=result.intent,
     )
 
 

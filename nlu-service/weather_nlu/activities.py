@@ -22,17 +22,20 @@ class ActivityExample:
     text: str
 
 
+def split_keywords(value: str) -> tuple[str, ...]:
+    """Tách cột keywords dạng "từ 1;từ 2" thành các từ khóa, bỏ ô trống."""
+    return tuple(
+        keyword.strip() for keyword in value.split(KEYWORD_SEPARATOR) if keyword.strip()
+    )
+
+
 def load_activities(path: Path = ACTIVITIES_PATH) -> list[Activity]:
     with path.open(encoding="utf-8-sig", newline="") as file:
         return [
             Activity(
                 id=row["id"],
                 name=row["name"],
-                keywords=tuple(
-                    keyword.strip()
-                    for keyword in row["keywords"].split(KEYWORD_SEPARATOR)
-                    if keyword.strip()
-                ),
+                keywords=split_keywords(row["keywords"]),
             )
             for row in csv.DictReader(file)
         ]

@@ -11,7 +11,14 @@ import {
   type LucideIcon,
 } from 'lucide-react';
 import type { ActivityProfile } from '../api/advisory';
+import type { QuestionUnderstanding } from '../api/nlu';
 import { vietnamYearMonth } from './advisory';
+
+/** Hai thông tin đủ để xếp hạng điểm đến. */
+export interface DestinationQuery {
+  month: string;
+  activityId: string;
+}
 
 /** Tab "Đi đâu?" mặc định là Du lịch vì hợp ngữ cảnh chọn điểm đến hơn "Nhu cầu chung". */
 export const DEFAULT_DESTINATION_ACTIVITY = 'travel';
@@ -56,4 +63,31 @@ export function destinationActivities(activities: ActivityProfile[]): ActivityPr
 
 export function activityIcon(activityId: string): LucideIcon {
   return ACTIVITY_ICONS[activityId] ?? MapPin;
+}
+
+/**
+ * Quy kết quả đọc câu hỏi về tháng và hoạt động để xếp hạng điểm đến.
+ * Câu hỏi nêu ngày hoặc tháng thì lấy tháng bắt đầu, hỏi hiện tại thì lấy tháng này,
+ * còn lại lấy tháng kế tiếp.
+ */
+export function toDestinationQuery(
+  understanding: QuestionUnderstanding,
+  now = new Date(),
+): DestinationQuery {
+  const { time } = understanding;
+  const { year, month } = vietnamYearMonth(now);
+  const currentMonth = `${year}-${String(month).padStart(2, '0')}`;
+  const requestedDate = time?.startDate ?? time?.endDate;
+  let targetMonth = upcomingMonths(1, now)[0];
+
+  if (time?.kind === 'now') {
+    targetMonth = currentMonth;
+  } else if ((time?.kind === 'months' || time?.kind === 'dates') && requestedDate) {
+    targetMonth = requestedDate.slice(0, 7);
+  }
+
+  return {
+    month: targetMonth,
+    activityId: understanding.activityId || DEFAULT_DESTINATION_ACTIVITY,
+  };
 }

@@ -6,8 +6,18 @@ import pytest
 
 from tests.advisory_helpers import make_history
 from weather_analysis.advisory.candidates import normalize_request
+from weather_analysis.advisory.destinations import (
+    DestinationHistory,
+    build_destination_ranking,
+    normalize_destination_request,
+)
 from weather_analysis.advisory.service import build_advice
-from weather_analysis.api.advisory_schemas import AdviceRequest, AdviceResponse
+from weather_analysis.api.advisory_schemas import (
+    AdviceRequest,
+    AdviceResponse,
+    DestinationRankingResponse,
+    DestinationRequestBody,
+)
 from weather_analysis.services.climate_service import calculate_climate_period
 
 
@@ -32,6 +42,25 @@ def advice_response(payload: dict[str, Any]) -> dict[str, Any]:
     ).model_dump(mode="json", by_alias=True)
 
 
+def destination_response(payload: dict[str, Any]) -> dict[str, Any]:
+    today = date(2026, 9, 20)
+    period = calculate_climate_period(today)
+    month, activity = normalize_destination_request(
+        DestinationRequestBody.model_validate(payload).to_request(), today
+    )
+    histories = [
+        DestinationHistory(
+            "phu-quoc", "Phú Quốc", "Tây Nam Bộ", make_history(period, lambda _: (28, 0))
+        ),
+        DestinationHistory(
+            "vung-tau", "Vũng Tàu", "Đông Nam Bộ", make_history(period, lambda _: (30, 5))
+        ),
+    ]
+    return DestinationRankingResponse.from_ranking(
+        build_destination_ranking(month, activity, histories, period)
+    ).model_dump(mode="json", by_alias=True)
+
+
 @pytest.fixture
 def advisory_requests(page: Page) -> list[dict[str, Any]]:
     requests: list[dict[str, Any]] = []
@@ -50,4 +79,17 @@ def advisory_requests(page: Page) -> list[dict[str, Any]]:
         route.fulfill(json=advice_response(payload))
 
     page.route("**/api/advisory", respond)
+    return requests
+
+
+@pytest.fixture
+def destination_requests(page: Page) -> list[dict[str, Any]]:
+    requests: list[dict[str, Any]] = []
+
+    def respond(route: Route) -> None:
+        payload = request_payload(route)
+        requests.append(payload)
+        route.fulfill(json=destination_response(payload))
+
+    page.route("**/api/advisory/destinations", respond)
     return requests

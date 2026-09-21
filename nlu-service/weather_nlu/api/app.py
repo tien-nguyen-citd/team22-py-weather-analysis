@@ -14,6 +14,7 @@ from weather_nlu.api.dependencies import set_extractor
 from weather_nlu.api.routes import router
 from weather_nlu.encoder import MINILM_MODEL, MiniLmEncoder
 from weather_nlu.extractor import RuleMiniLmExtractor
+from weather_nlu.intents import IntentKeywordMatcher, load_intent_examples, load_intents
 from weather_nlu.locations import LocationMatcher, load_locations
 from weather_nlu.models import download_model
 
@@ -27,6 +28,8 @@ async def lifespan(_app: FastAPI) -> AsyncIterator[None]:
             load_activity_examples(),
             LocationMatcher(load_locations()),
             ActivityKeywordMatcher(load_activities()),
+            IntentKeywordMatcher(load_intents()),
+            load_intent_examples(),
         )
     )
     try:

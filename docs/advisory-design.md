@@ -19,6 +19,16 @@ hỏi được gửi tới `POST /nlu/understand` cùng vị trí người dùng
 theo giờ Việt Nam. Nếu không kết nối được dịch vụ hoặc lời gọi thất bại, trang tự
 chuyển sang form nhập tiêu chí và luồng `/api/advisory` vẫn hoạt động bình thường.
 
+Kết quả đọc câu hỏi có trường `intent` để giao diện chọn API tư vấn:
+
+- `find_place`, ví dụ "Tháng 12 đi biển ở đâu?": gọi `/api/advisory/destinations`
+  để xếp hạng điểm đến. Tháng là tháng bắt đầu khi câu hỏi nêu ngày hoặc tháng,
+  tháng hiện tại khi hỏi lúc này, còn lại là tháng kế tiếp. Câu không nêu hoạt
+  động thì dùng Du lịch.
+- `find_time`, ví dụ "Tháng nào đi Đà Lạt đẹp?": gọi `/api/advisory` để tìm thời
+  điểm phù hợp tại một địa điểm như mô tả bên dưới. Giá trị `intent` lạ cũng đi
+  theo luồng này.
+
 Vị trí người dùng là thiết lập chung, độc lập với địa điểm thời tiết đang xem trên
 URL. Giao diện lưu slug địa điểm trong trình duyệt và cho tìm kiếm hoặc định vị lại
 ở góc phải header. Lần đầu chưa có thiết lập, trình duyệt dùng GPS để chọn địa điểm

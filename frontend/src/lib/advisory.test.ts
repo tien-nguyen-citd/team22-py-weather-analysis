@@ -19,6 +19,7 @@ function understanding(
     locationFromQuestion: true,
     activityId: 'camping',
     time,
+    intent: 'find_time',
     ...overrides,
   };
 }
