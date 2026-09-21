@@ -21,9 +21,12 @@ python -m venv .venv
 python -m pip install -r requirements-dev.txt
 python -m playwright install chromium
 python -m weather_analysis.seed
+python -m weather_analysis.preload_climate
 ```
 
-Lệnh seed tự chạy migration và nạp tài khoản, địa điểm mẫu.
+Lệnh seed tự chạy migration và nạp tài khoản, địa điểm mẫu. Lệnh
+`preload_climate` nạp trước lịch sử khí hậu cho các điểm dùng trong tính năng
+xếp hạng điểm đến; lần đầu có thể mất vài phút, gặp lỗi thì chạy lại lệnh.
 
 ### Frontend
 

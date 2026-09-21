@@ -144,15 +144,12 @@ def explain_candidate(candidate: Candidate, activity: ActivityProfile) -> str:
     )
 
 
+def ranking_key(candidate: Candidate) -> tuple[float, float, date]:
+    return (-candidate.score, candidate.rainy_day_percentage, candidate.window.start_date)
+
+
 def rank_candidates(candidates: list[Candidate]) -> list[Candidate]:
-    ranked = sorted(
-        candidates,
-        key=lambda item: (
-            -item.score,
-            item.rainy_day_percentage,
-            item.window.start_date,
-        ),
-    )
+    ranked = sorted(candidates, key=ranking_key)
     if not ranked:
         return []
     best_score = ranked[0].score

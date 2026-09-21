@@ -54,6 +54,12 @@ def normalize_request(request: AdvisoryRequest, today: date) -> NormalizedReques
     return NormalizedRequest(slug, time, profile.id, request.top_k)
 
 
+def month_window(month: date) -> CandidateWindow:
+    last_day = calendar.monthrange(month.year, month.month)[1]
+    label = f"{month.month:02d}/{month.year:04d}"
+    return CandidateWindow(month, month.replace(day=last_day), f"Tháng {label}", "month")
+
+
 def generate_candidates(time: MonthRange) -> list[CandidateWindow]:
     start = parse_month(time.start_month)
     end = parse_month(time.end_month)
@@ -63,18 +69,11 @@ def generate_candidates(time: MonthRange) -> list[CandidateWindow]:
     windows: list[CandidateWindow] = []
     for offset in range(month_count):
         month = add_months(start, offset)
-        last_day = calendar.monthrange(month.year, month.month)[1]
-        label = f"{month.month:02d}/{month.year:04d}"
         if month_count >= 3:
-            windows.append(
-                CandidateWindow(
-                    month,
-                    month.replace(day=last_day),
-                    f"Tháng {label}",
-                    "month",
-                )
-            )
+            windows.append(month_window(month))
         else:
+            last_day = calendar.monthrange(month.year, month.month)[1]
+            label = f"{month.month:02d}/{month.year:04d}"
             for first, last, name in (
                 (1, 10, "Đầu"),
                 (11, 20, "Giữa"),

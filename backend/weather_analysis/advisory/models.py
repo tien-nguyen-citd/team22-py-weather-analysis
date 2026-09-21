@@ -85,3 +85,29 @@ class Advice:
     summary: str
     low_suitability: bool
     notes: list[str]
+
+
+@dataclass(frozen=True)
+class DestinationRequest:
+    month: str | None = None
+    activity_id: str | None = None
+
+
+@dataclass(frozen=True)
+class DestinationResult:
+    slug: str
+    name: str
+    region_label: str
+    candidate: Candidate
+
+
+@dataclass(frozen=True)
+class DestinationRanking:
+    month: str
+    activity: ActivityProfile
+    baseline_start: date
+    baseline_end: date
+    destinations: list[DestinationResult]
+    summary: str
+    low_suitability: bool
+    notes: list[str]

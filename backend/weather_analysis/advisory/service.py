@@ -25,6 +25,15 @@ from weather_analysis.services.climate_service import (
 from weather_analysis.services.location_service import get_location_by_slug
 
 
+ADVICE_NOTES = [
+    "Tham khảo từ lịch sử khí hậu, không phải dự báo cho ngày cụ thể.",
+    "Điểm phù hợp không phải xác suất thời tiết trong tương lai.",
+    "Trọng số và khoảng nhiệt độ là quy ước sản phẩm, không phải chuẩn khí tượng.",
+    "Chỉ xét lượng mưa và nhiệt độ trung bình ngày; chưa xét gió, nắng, sóng biển hoặc độ ẩm.",
+    "Không dùng ngày 29/2 khi tính các chỉ số so sánh giữa các năm.",
+]
+
+
 def get_advice(
     session: Session,
     request: AdvisoryRequest,
@@ -88,11 +97,5 @@ def build_advice(
         candidates=sorted(ranked, key=lambda item: item.window.start_date),
         summary=summary,
         low_suitability=low_suitability,
-        notes=[
-            "Tham khảo từ lịch sử khí hậu, không phải dự báo cho ngày cụ thể.",
-            "Điểm phù hợp không phải xác suất thời tiết trong tương lai.",
-            "Trọng số và khoảng nhiệt độ là quy ước sản phẩm, không phải chuẩn khí tượng.",
-            "Chỉ xét lượng mưa và nhiệt độ trung bình ngày; chưa xét gió, nắng, sóng biển hoặc độ ẩm.",
-            "Không dùng ngày 29/2 khi tính các chỉ số so sánh giữa các năm.",
-        ],
+        notes=ADVICE_NOTES,
     )

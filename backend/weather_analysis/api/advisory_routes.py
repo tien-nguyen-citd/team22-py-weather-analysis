@@ -8,6 +8,7 @@ from fastapi.responses import JSONResponse
 from fastapi.routing import APIRoute
 
 from weather_analysis.advisory.activities import ACTIVITY_PROFILES
+from weather_analysis.advisory.destinations import get_destination_ranking
 from weather_analysis.advisory.models import AdvisoryInputError
 from weather_analysis.advisory.service import get_advice
 from weather_analysis.api.advisory_schemas import (
@@ -15,6 +16,8 @@ from weather_analysis.api.advisory_schemas import (
     AdviceRequest,
     AdviceResponse,
     AdvisoryErrorResponse,
+    DestinationRankingResponse,
+    DestinationRequestBody,
 )
 from weather_analysis.api.dependencies import DbSession, WeatherClient
 from weather_analysis.clients.open_meteo_client import (
@@ -93,3 +96,30 @@ def advise(
     except (WeatherProviderError, ClimateDataError) as error:
         raise HTTPException(status_code=502, detail=str(error)) from error
     return AdviceResponse.model_validate(advice)
+
+
+@router.post(
+    "/destinations",
+    response_model=DestinationRankingResponse,
+    summary="Xếp hạng điểm đến theo tháng và hoạt động",
+    responses={
+        422: {"model": AdvisoryErrorResponse, "description": "Yêu cầu không hợp lệ"},
+        502: {
+            "model": AdvisoryErrorResponse,
+            "description": "Không đủ dữ liệu lịch sử hợp lệ",
+        },
+    },
+)
+def rank_destinations(
+    request: DestinationRequestBody,
+    session: DbSession,
+    client: WeatherClient,
+    today: Annotated[date, Depends(get_advisory_today)],
+) -> DestinationRankingResponse:
+    try:
+        ranking = get_destination_ranking(session, request.to_request(), client, today)
+    except AdvisoryInputError as error:
+        raise HTTPException(status_code=422, detail=str(error)) from error
+    except (WeatherProviderError, ClimateDataError) as error:
+        raise HTTPException(status_code=502, detail=str(error)) from error
+    return DestinationRankingResponse.from_ranking(ranking)

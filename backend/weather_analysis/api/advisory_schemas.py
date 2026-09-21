@@ -1,9 +1,15 @@
 from datetime import date
-from typing import Literal
+from typing import Literal, Self
 
 from pydantic import ConfigDict, Field, StrictInt, StrictStr
 
-from weather_analysis.advisory.models import AdvisoryRequest, MonthRange
+from weather_analysis.advisory.models import (
+    AdvisoryRequest,
+    DestinationRanking,
+    DestinationRequest,
+    DestinationResult,
+    MonthRange,
+)
 from weather_analysis.api.schemas import CamelResponse
 
 
@@ -108,3 +114,69 @@ class AdviceResponse(CamelResponse):
 
 class AdvisoryErrorResponse(CamelResponse):
     detail: str
+
+
+class DestinationRequestBody(CamelResponse):
+    model_config = ConfigDict(
+        extra="forbid",
+        json_schema_extra={
+            "examples": [{"month": "2026-12", "activityId": "beach"}],
+        },
+    )
+
+    month: StrictStr | None = Field(
+        default=None, description="Tháng YYYY-MM; bỏ trống để dùng tháng kế tiếp"
+    )
+    activity_id: StrictStr | None = Field(
+        default=None, description="Bỏ trống để dùng nhu cầu chung"
+    )
+
+    def to_request(self) -> DestinationRequest:
+        return DestinationRequest(month=self.month, activity_id=self.activity_id)
+
+
+class DestinationLocationResponse(CamelResponse):
+    slug: str
+    name: str
+    region_label: str
+
+
+class DestinationResultResponse(CamelResponse):
+    location: DestinationLocationResponse
+    candidate: CandidateResponse
+
+    @classmethod
+    def from_result(cls, result: DestinationResult) -> Self:
+        return cls(
+            location=DestinationLocationResponse(
+                slug=result.slug, name=result.name, region_label=result.region_label
+            ),
+            candidate=CandidateResponse.model_validate(result.candidate),
+        )
+
+
+class DestinationRankingResponse(CamelResponse):
+    month: str
+    activity: ActivityProfileResponse
+    baseline_start: date
+    baseline_end: date
+    destinations: list[DestinationResultResponse]
+    summary: str
+    low_suitability: bool
+    notes: list[str]
+
+    @classmethod
+    def from_ranking(cls, ranking: DestinationRanking) -> Self:
+        return cls(
+            month=ranking.month,
+            activity=ActivityProfileResponse.model_validate(ranking.activity),
+            baseline_start=ranking.baseline_start,
+            baseline_end=ranking.baseline_end,
+            destinations=[
+                DestinationResultResponse.from_result(item)
+                for item in ranking.destinations
+            ],
+            summary=ranking.summary,
+            low_suitability=ranking.low_suitability,
+            notes=ranking.notes,
+        )
