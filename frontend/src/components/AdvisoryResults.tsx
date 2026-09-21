@@ -9,7 +9,7 @@ interface AdvisoryResultsProps {
   onExploreMonth: (month: string) => void;
 }
 
-function CandidateEvidence({ candidate, activity }: { candidate: AdvisoryCandidate; activity: ActivityProfile }) {
+export function CandidateEvidence({ candidate, activity }: { candidate: AdvisoryCandidate; activity: ActivityProfile }) {
   return (
     <div className="space-y-3 text-sm leading-relaxed">
       <p>{candidate.explanation}</p>

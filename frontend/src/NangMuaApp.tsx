@@ -13,6 +13,7 @@ import { PlannerPage } from './pages/PlannerPage';
 import { ComparePage } from './pages/ComparePage';
 import { HistoryPage } from './pages/HistoryPage';
 import { AdvisoryPage } from './pages/AdvisoryPage';
+import { DestinationPage } from './pages/DestinationPage';
 import { WeatherSkeleton } from './components/WeatherSkeleton';
 import { ErrorMessage } from './components/ErrorMessage';
 import {
@@ -67,10 +68,11 @@ export const NangMuaApp: React.FC = () => {
   const userLocationState = useUserLocation(locations, currentLocation);
 
   // Selected tab
-  const validPages: PageTab[] = ['tong-quan', 'khung-gio', 'so-sanh', 'lich-su', 'tu-van'];
+  const validPages: PageTab[] = ['tong-quan', 'khung-gio', 'so-sanh', 'lich-su', 'tu-van', 'di-dau'];
   const currentPage: PageTab = validPages.includes(page as PageTab)
     ? (page as PageTab)
     : 'tong-quan';
+  const usesClimateAdvice = currentPage === 'tu-van' || currentPage === 'di-dau';
 
   // Favorites from localStorage
   const [favorites, setFavorites] = useState<string[]>(() => {
@@ -171,7 +173,7 @@ export const NangMuaApp: React.FC = () => {
         <Header
           currentPage={currentPage}
           onSelectPage={handleSelectPage}
-          updatedAt={currentPage === 'tu-van' ? 'Tư vấn từ lịch sử khí hậu' : formatUpdatedAt(weatherData?.updatedAt)}
+          updatedAt={usesClimateAdvice ? 'Tư vấn từ lịch sử khí hậu' : formatUpdatedAt(weatherData?.updatedAt)}
           isFetching={isFetching || climateIsFetching > 0 || advisoryIsFetching > 0}
           onRefresh={() => {
             void refetch();
@@ -185,8 +187,8 @@ export const NangMuaApp: React.FC = () => {
           onDetectUserLocation={userLocationState.detectUserLocation}
         />
 
-        {/* Trang So sánh và Tư vấn tự chọn địa điểm nên không dùng LocationBar. */}
-        {currentPage !== 'so-sanh' && currentPage !== 'tu-van' && (
+        {/* Trang So sánh, Tư vấn và Đi đâu? tự chọn địa điểm nên không dùng LocationBar. */}
+        {currentPage !== 'so-sanh' && !usesClimateAdvice && (
           <LocationBar
             currentLocation={currentLocation}
             locations={locations}
@@ -205,6 +207,8 @@ export const NangMuaApp: React.FC = () => {
               userLocationSlug={userLocationState.userLocation.slug}
             />
           </main>
+        ) : currentPage === 'di-dau' ? (
+          <main><DestinationPage /></main>
         ) : currentPage === 'so-sanh' ? (
           <main>
             <ComparePage
