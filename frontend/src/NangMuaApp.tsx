@@ -13,7 +13,6 @@ import { OverviewPage } from './pages/OverviewPage';
 import { ComparePage } from './pages/ComparePage';
 import { HistoryPage } from './pages/HistoryPage';
 import { AdvisoryPage } from './pages/AdvisoryPage';
-import { DestinationPage } from './pages/DestinationPage';
 import { WeatherSkeleton } from './components/WeatherSkeleton';
 import { ErrorMessage } from './components/ErrorMessage';
 import {
@@ -46,7 +45,6 @@ export const NangMuaApp: React.FC = () => {
   const currentLocation = findLocationBySlug(locations, viewedSlug);
 
   const currentPage: PageTab = isPageTab(page) ? page : 'tong-quan';
-  const usesClimateAdvice = currentPage === 'tu-van' || currentPage === 'di-dau';
 
   // Favorites from localStorage
   const [favorites, setFavorites] = useState<string[]>(() => {
@@ -140,8 +138,8 @@ export const NangMuaApp: React.FC = () => {
           onDetectUserLocation={userLocationState.detectUserLocation}
         />
 
-        {/* Trang So sánh, Tư vấn và Đi đâu? tự chọn địa điểm nên không dùng LocationBar. */}
-        {currentPage !== 'so-sanh' && !usesClimateAdvice && (
+        {/* Trang So sánh và Tư vấn tự chọn địa điểm nên không dùng LocationBar. */}
+        {currentPage !== 'so-sanh' && currentPage !== 'tu-van' && (
           <LocationBar
             currentLocation={currentLocation}
             locations={locations}
@@ -160,8 +158,6 @@ export const NangMuaApp: React.FC = () => {
               userLocationSlug={userLocationState.userLocation.slug}
             />
           </main>
-        ) : currentPage === 'di-dau' ? (
-          <main><DestinationPage /></main>
         ) : currentPage === 'so-sanh' ? (
           <main>
             <ComparePage

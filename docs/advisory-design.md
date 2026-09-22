@@ -109,7 +109,7 @@ Tắm biển đặt nặng nhiệt độ vì trời lạnh thì không xuống b
 dụ tháng 12, biển miền Bắc ít mưa nhưng nhiệt độ trung bình khoảng 19°C nên bị điểm
 thấp, xếp sau các bãi biển phía Nam.
 
-Tab "Đi đâu?" không hiện `construction` vì thi công gắn với công trình có sẵn,
+Form tìm địa điểm không hiện `construction` vì thi công gắn với công trình có sẵn,
 không phải việc chọn nơi để đi.
 
 Với mỗi ứng viên lịch sử:
@@ -199,12 +199,17 @@ Sau khi chạy backend và frontend theo README, mở
 `http://localhost:5173/tu-van` hoặc chọn tab **Tư vấn** trong ứng dụng.
 
 1. Chọn vị trí người dùng ở header hoặc nêu địa điểm trong câu hỏi. Khi dùng form,
-   chọn địa điểm, hoạt động và khoảng tháng.
+   chọn chế độ **Tìm thời điểm** rồi chọn địa điểm, hoạt động và khoảng tháng.
 2. Nhấn **Tìm thời điểm phù hợp** để xem đề xuất chính và tối đa hai lựa chọn thay thế.
 3. Mở **Vì sao chọn?** để xem số liệu và đóng góp của từng tiêu chí vào điểm tổng.
-4. Chọn một cột trên dải thời gian để xem số liệu của ứng viên đó; hỗ trợ Tab và Enter.
+4. Chọn một cột trên biểu đồ để xem số liệu của ứng viên đó; hỗ trợ Tab và Enter.
+   Các cột xếp theo tháng 1 → 12 và không ghi năm, vì điểm được tính từ lịch sử khí
+   hậu chứ không phụ thuộc năm.
 5. Với ứng viên theo tháng, chọn **Xem giai đoạn trong tháng này** để phân tích đầu,
    giữa và cuối tháng.
+
+Để tìm nơi nên đi, chọn chế độ **Tìm địa điểm** trong form, chọn tháng và hoạt động
+rồi nhấn **Tìm địa điểm phù hợp** để xem bảng xếp hạng điểm đến.
 
 Ba mẫu điền nhanh gồm đám cưới tại TP.HCM, du lịch Phú Quốc và cắm trại Đà Lạt.
 Mẫu chỉ điền địa điểm, hoạt động và 12 tháng mặc định; kết quả luôn lấy từ API,

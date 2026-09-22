@@ -1,7 +1,12 @@
 import { useState } from 'react';
 import { ArrowDownRight, CalendarDays, CloudRain, Thermometer, Trophy } from 'lucide-react';
 import type { ActivityProfile, Advice, AdvisoryCandidate } from '../api/advisory';
-import { formatAdvisoryDate as dateLabel, formatAdvisoryNumber as number } from '../lib/advisory';
+import {
+  formatAdvisoryDate as dateLabel,
+  formatAdvisoryNumber as number,
+  formatMonthOnlyLabel,
+  sortCandidatesByMonth,
+} from '../lib/advisory';
 
 interface AdvisoryResultsProps {
   advice: Advice;
@@ -78,9 +83,8 @@ export function AdvisoryResults({ advice, locationName, onExploreMonth }: Adviso
   const best = advice.recommendations[0];
   const [selectedDate, setSelectedDate] = useState(best?.window.startDate);
   const selected = advice.candidates.find(item => item.window.startDate === selectedDate) ?? best;
-  // Biểu đồ luôn đi theo thời gian: thời điểm gần nhất nằm bên trái.
-  const chronologicalCandidates = [...advice.candidates]
-    .sort((a, b) => a.window.startDate.localeCompare(b.window.startDate));
+  // Biểu đồ xếp theo tháng 1 → 12 và bỏ năm để dễ dò theo lịch.
+  const monthOrderedCandidates = sortCandidatesByMonth(advice.candidates);
 
   if (!best || !selected) return <p role="status">Chưa có thời điểm để đề xuất trong khoảng đã chọn.</p>;
 
@@ -108,25 +112,26 @@ export function AdvisoryResults({ advice, locationName, onExploreMonth }: Adviso
         <p className="mt-1 text-sm text-m1">Điểm càng cao càng phù hợp với tiêu chí. Chọn một cột để xem số liệu; có thể dùng phím Tab và Enter.</p>
         <div className="mt-5 overflow-x-auto pb-3">
           <div className="flex min-w-max gap-2">
-            {chronologicalCandidates.map(candidate => {
+            {monthOrderedCandidates.map(candidate => {
               const active = candidate.window.startDate === selected.window.startDate;
+              const label = formatMonthOnlyLabel(candidate.window);
               return (
                 <button key={candidate.window.startDate} type="button" aria-pressed={active}
-                  aria-label={`${candidate.window.label}: ${number(candidate.score)} điểm`}
+                  aria-label={`${label}: ${number(candidate.score)} điểm`}
                   onClick={() => setSelectedDate(candidate.window.startDate)}
                   className={`focus-ring flex w-[76px] shrink-0 flex-col rounded-xl border p-2 text-center ${active ? 'border-acc bg-acc-soft' : 'border-transparent hover:bg-tint'}`}>
                   <span className="text-sm font-bold text-ink">{number(candidate.score)}</span>
                   <span className="my-2 flex h-28 w-full items-end rounded bg-track/40" aria-hidden="true">
                     <span className={`w-full rounded ${candidate.rank === 1 ? 'bg-acc' : 'bg-mid'}`} style={{ height: `${Math.max(2, candidate.score)}%` }} />
                   </span>
-                  <span className="text-xs leading-5 text-ink2">{candidate.window.label}</span>
+                  <span className="text-xs leading-5 text-ink2">{label}</span>
                 </button>
               );
             })}
           </div>
         </div>
         <div aria-live="polite" aria-atomic="true" className="mt-3 rounded-2xl bg-tint p-4 sm:p-5">
-          <h4 className="mb-3 font-semibold">{selected.window.label} · Hạng {selected.rank}/{advice.candidates.length}</h4>
+          <h4 className="mb-3 font-semibold">{formatMonthOnlyLabel(selected.window)} · Hạng {selected.rank}/{advice.candidates.length}</h4>
           <CandidateEvidence candidate={selected} activity={advice.activity} />
         </div>
       </section>

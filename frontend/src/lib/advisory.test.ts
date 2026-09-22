@@ -1,14 +1,36 @@
 import { describe, expect, it } from 'vitest';
+import type { AdvisoryCandidate } from '../api/advisory';
 import type { QuestionUnderstanding } from '../api/nlu';
 import {
   defaultAdvisoryRange,
+  formatMonthOnlyLabel,
   inferActivityFromLocation,
+  sortCandidatesByMonth,
   toAdvisoryQuery,
   validateAdvisoryRange,
   vietnamToday,
 } from './advisory';
 
 const NOW = new Date('2026-09-20T05:00:00Z');
+
+function candidate(startDate: string, resolution: 'month' | 'period' = 'month'): AdvisoryCandidate {
+  return {
+    window: { startDate, endDate: startDate, label: startDate, resolution },
+    temperatureMean: 25,
+    rainyDayPercentage: 10,
+    precipitationMean: 3,
+    rainScore: 100,
+    temperatureScore: 100,
+    rainContribution: 80,
+    temperatureContribution: 20,
+    score: 100,
+    sampleYears: 10,
+    sampleDays: 300,
+    explanation: '',
+    rank: 1,
+    similarToBest: false,
+  };
+}
 
 function understanding(
   time: QuestionUnderstanding['time'],
@@ -130,6 +152,35 @@ describe('Quy đổi kết quả đọc câu hỏi', () => {
     }), 'ha-noi', NOW);
 
     expect(result.time).toEqual({ startMonth: '2026-11', endMonth: '2027-10' });
+  });
+});
+
+describe('Biểu đồ theo tháng', () => {
+  it('xếp khoảng 12 tháng qua năm theo tháng 1 → 12', () => {
+    const candidates = ['2026-10', '2026-11', '2026-12', '2027-01', '2027-02', '2027-03',
+      '2027-04', '2027-05', '2027-06', '2027-07', '2027-08', '2027-09']
+      .map(month => candidate(`${month}-01`));
+
+    expect(sortCandidatesByMonth(candidates).map(item => formatMonthOnlyLabel(item.window))).toEqual([
+      'Tháng 1', 'Tháng 2', 'Tháng 3', 'Tháng 4', 'Tháng 5', 'Tháng 6',
+      'Tháng 7', 'Tháng 8', 'Tháng 9', 'Tháng 10', 'Tháng 11', 'Tháng 12',
+    ]);
+  });
+
+  it('xếp giai đoạn theo tháng rồi đầu, giữa, cuối tháng', () => {
+    const candidates = ['2026-12-01', '2026-12-11', '2026-12-21', '2027-01-01', '2027-01-11', '2027-01-21']
+      .map(startDate => candidate(startDate, 'period'));
+
+    expect(sortCandidatesByMonth(candidates).map(item => formatMonthOnlyLabel(item.window))).toEqual([
+      'Đầu tháng 1', 'Giữa tháng 1', 'Cuối tháng 1',
+      'Đầu tháng 12', 'Giữa tháng 12', 'Cuối tháng 12',
+    ]);
+  });
+
+  it('không làm đổi thứ tự của danh sách gốc', () => {
+    const candidates = [candidate('2026-12-01'), candidate('2027-01-01')];
+    sortCandidatesByMonth(candidates);
+    expect(candidates.map(item => item.window.startDate)).toEqual(['2026-12-01', '2027-01-01']);
   });
 });
 

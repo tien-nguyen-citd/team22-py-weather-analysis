@@ -1,3 +1,4 @@
+from datetime import date
 from typing import Any
 
 from playwright.sync_api import Page, Route, expect
@@ -8,6 +9,7 @@ from tests.e2e.advisory_fixtures import (  # noqa: F401
     destination_requests,
     request_payload,
 )
+from weather_analysis.advisory.candidates import add_months
 
 
 SAMPLE_TRAVEL = "Tháng nào đi Đà Lạt chơi được?"
@@ -149,6 +151,93 @@ def test_place_question_shows_destination_ranking(
     assert nlu_requests[-1]["question"] == PLACE_QUESTION
     assert destination_requests[-1] == {"month": "2026-12", "activityId": "beach"}
     assert advisory_requests == []
+
+
+def test_place_form_ranks_destinations_for_the_chosen_month(
+    page: Page,
+    advisory_requests: list[dict[str, Any]],  # noqa: F811
+    destination_requests: list[dict[str, Any]],  # noqa: F811
+) -> None:
+    # Chip tháng tính từ ngày chạy test, lấy tháng thứ hai để luôn nằm trong 12 tháng tới.
+    month = add_months(date.today(), 2)
+    page.goto("/tu-van")
+    page.get_by_role("button", name="Điền form thay vì hỏi", exact=True).click()
+
+    form = page.get_by_role("region", name="Điền tiêu chí tư vấn")
+    form.get_by_role("button", name="Tìm địa điểm", exact=True).click()
+    form.get_by_role("button", name=f"Tháng {month.month}/{month.year}", exact=True).click()
+    form.get_by_role("button", name="Tắm biển", exact=True).click()
+    form.get_by_role("button", name="Tìm địa điểm phù hợp", exact=True).click()
+
+    expect(page.get_by_role("region", name="Xếp hạng điểm đến")).to_be_visible()
+    expect(page.get_by_text("Hiểu là", exact=True)).to_have_count(0)
+    assert destination_requests[-1] == {
+        "month": f"{month.year}-{month.month:02d}",
+        "activityId": "beach",
+    }
+    assert advisory_requests == []
+
+
+def test_edit_place_result_opens_the_place_form(
+    page: Page,
+    advisory_requests: list[dict[str, Any]],  # noqa: F811
+    destination_requests: list[dict[str, Any]],  # noqa: F811
+    nlu_requests: list[dict[str, Any]],
+) -> None:
+    page.goto("/tu-van")
+    page.get_by_label("Câu hỏi của bạn", exact=True).fill(PLACE_QUESTION)
+    page.get_by_role("button", name="Gửi câu hỏi", exact=True).click()
+    expect(page.get_by_role("region", name="Xếp hạng điểm đến")).to_be_visible()
+
+    page.get_by_role("button", name="Sửa", exact=True).click()
+    form = page.get_by_role("region", name="Điền tiêu chí tư vấn")
+    expect(form.get_by_role("button", name="Tìm địa điểm", exact=True)).to_have_attribute(
+        "aria-pressed", "true"
+    )
+    expect(form.get_by_role("button", name="Tháng 12/2026", exact=True)).to_have_attribute(
+        "aria-pressed", "true"
+    )
+    expect(form.get_by_role("button", name="Tắm biển", exact=True)).to_have_attribute(
+        "aria-pressed", "true"
+    )
+
+    form.get_by_role("button", name="Tìm thời điểm", exact=True).click()
+    expect(form.get_by_label("Hoạt động", exact=True)).to_have_value("beach")
+    expect(form.get_by_label("Từ tháng", exact=True)).to_have_value("2026-12")
+
+
+def test_chart_lists_months_from_january_without_year(
+    page: Page,
+    advisory_requests: list[dict[str, Any]],  # noqa: F811
+) -> None:
+    page.goto("/tu-van")
+    page.get_by_role("button", name="Điền form thay vì hỏi", exact=True).click()
+    form = page.get_by_role("region", name="Điền tiêu chí tư vấn")
+    form.get_by_label("Hoạt động", exact=True).select_option("general")
+    form.get_by_label("Từ tháng", exact=True).fill("2026-10")
+    form.get_by_label("Đến tháng", exact=True).fill("2027-09")
+    form.get_by_role("button", name="Tìm thời điểm phù hợp", exact=True).click()
+
+    chart = page.get_by_role("region", name="So sánh các thời điểm")
+    columns = chart.get_by_role("button")
+    expect(columns).to_have_count(12)
+    labels = [
+        (columns.nth(index).get_attribute("aria-label") or "").split(":")[0]
+        for index in range(12)
+    ]
+    assert labels == [f"Tháng {month}" for month in range(1, 13)]
+
+
+def test_destination_tab_is_gone(
+    page: Page,
+    base_url: str,
+    advisory_requests: list[dict[str, Any]],  # noqa: F811
+) -> None:
+    page.goto("/di-dau")
+
+    expect(page).to_have_url(f"{base_url}/")
+    expect(page.get_by_role("button", name="Tư vấn", exact=True)).to_be_visible()
+    expect(page.get_by_role("button", name="Đi đâu?", exact=True)).to_have_count(0)
 
 
 def test_saved_user_location_is_independent_from_viewed_location(

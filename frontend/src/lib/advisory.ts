@@ -1,4 +1,4 @@
-import type { MonthRange } from '../api/advisory';
+import type { AdvisoryCandidate, MonthRange } from '../api/advisory';
 import type { QuestionUnderstanding } from '../api/nlu';
 
 /** Ba thông tin đủ để chạy một lượt tư vấn. */
@@ -104,6 +104,25 @@ export function validateAdvisoryRange(range: MonthRange): string | null {
   const index = (value: string) => Number(value.slice(0, 4)) * 12 + Number(value.slice(5, 7));
   const count = index(range.endMonth) - index(range.startMonth) + 1;
   return count < 1 || count > 12 ? 'Chọn từ 1 đến 12 tháng liên tiếp, tháng kết thúc không trước tháng bắt đầu.' : null;
+}
+
+/**
+ * Xếp ứng viên theo tháng 1 → 12, trong cùng tháng theo ngày bắt đầu.
+ * Điểm được tính từ lịch sử khí hậu nên năm không ảnh hưởng tới việc so sánh các tháng.
+ */
+export function sortCandidatesByMonth(candidates: AdvisoryCandidate[]): AdvisoryCandidate[] {
+  // startDate dạng YYYY-MM-DD, bỏ năm còn MM-DD để so sánh.
+  return [...candidates].sort((a, b) =>
+    a.window.startDate.slice(5).localeCompare(b.window.startDate.slice(5)));
+}
+
+/** Nhãn không có năm, dùng trên biểu đồ: 'Tháng 1', 'Đầu tháng 12'. */
+export function formatMonthOnlyLabel(window: AdvisoryCandidate['window']): string {
+  const month = Number(window.startDate.slice(5, 7));
+  if (window.resolution === 'month') return `Tháng ${month}`;
+  const day = Number(window.startDate.slice(8, 10));
+  const period = day <= 10 ? 'Đầu' : day <= 20 ? 'Giữa' : 'Cuối';
+  return `${period} tháng ${month}`;
 }
 
 export function formatAdvisoryDate(value: string): string {

@@ -21,7 +21,7 @@ export interface DestinationQuery {
   activityId: string;
 }
 
-/** Tab "Đi đâu?" mặc định là Du lịch vì hợp ngữ cảnh chọn điểm đến hơn "Nhu cầu chung". */
+/** Tìm điểm đến mặc định là Du lịch vì hợp ngữ cảnh chọn nơi để đi hơn "Nhu cầu chung". */
 export const DEFAULT_DESTINATION_ACTIVITY = 'travel';
 
 /** Thi công gắn với công trình có sẵn, không có nghĩa khi chọn nơi để đi. */

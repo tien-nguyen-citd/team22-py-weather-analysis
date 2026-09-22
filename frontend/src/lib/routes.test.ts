@@ -10,6 +10,7 @@ describe('routes', () => {
   it('chỉ nhận các trang có trong danh mục', () => {
     expect(isPageTab('lich-su')).toBe(true);
     expect(isPageTab('ha-noi')).toBe(false);
+    expect(isPageTab('di-dau')).toBe(false);
     expect(isPageTab(undefined)).toBe(false);
   });
 

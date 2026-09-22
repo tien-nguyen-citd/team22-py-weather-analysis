@@ -4,9 +4,11 @@ import { LoaderCircle, PencilLine } from 'lucide-react';
 import { getAdvice, getAdvisoryActivities } from '../api/advisory';
 import { understandQuestion, type NluDebug, type QuestionUnderstanding } from '../api/nlu';
 import { AdvisoryChatBox } from '../components/AdvisoryChatBox';
+import { AdvisoryFormPanel, type AdvisoryFormMode } from '../components/AdvisoryFormPanel';
 import { AdvisoryPageFooter } from '../components/AdvisoryPageFooter';
 import { AdvisoryQueryForm } from '../components/AdvisoryQueryForm';
 import { AdvisoryResults } from '../components/AdvisoryResults';
+import { DestinationQueryForm } from '../components/DestinationQueryForm';
 import { DestinationRanking } from '../components/DestinationRanking';
 import { ErrorMessage } from '../components/ErrorMessage';
 import { NluDebugPanel } from '../components/NluDebugPanel';
@@ -19,7 +21,13 @@ import {
   vietnamToday,
   type AdvisoryQuery,
 } from '../lib/advisory';
-import { formatMonthTitle, toDestinationQuery, type DestinationQuery } from '../lib/destinations';
+import {
+  DEFAULT_DESTINATION_ACTIVITY,
+  formatMonthTitle,
+  toDestinationQuery,
+  upcomingMonths,
+  type DestinationQuery,
+} from '../lib/destinations';
 import { isNluDebugShortcut } from '../lib/nluDebug';
 import type { LocationItem } from '../types';
 
@@ -36,7 +44,8 @@ interface AdvisoryPageProps {
 }
 
 export function AdvisoryPage({ locations, userLocationSlug }: AdvisoryPageProps) {
-  const [showForm, setShowForm] = useState(false);
+  // null: đang ở khung hỏi đáp; còn lại: form đang mở ở chế độ tương ứng.
+  const [formMode, setFormMode] = useState<AdvisoryFormMode | null>(null);
   const [isAsking, setIsAsking] = useState(false);
   const [askFailed, setAskFailed] = useState(false);
   const [query, setQuery] = useState<AdvisoryQuery | null>(null);
@@ -86,7 +95,7 @@ export function AdvisoryPage({ locations, userLocationSlug }: AdvisoryPageProps)
         );
       }
       setAskedByQuestion(true);
-      setShowForm(false);
+      setFormMode(null);
     } catch {
       setAskFailed(true);
     } finally {
@@ -94,13 +103,27 @@ export function AdvisoryPage({ locations, userLocationSlug }: AdvisoryPageProps)
     }
   }
 
-  function runFormQuery(next: AdvisoryQuery) {
+  function runTimeFormQuery(next: AdvisoryQuery) {
     setQuery(next);
     setDestinationQuery(null);
     setAskedByQuestion(false);
     setActivityInferredFromLocation(false);
     setLastAsked(null);
-    setShowForm(false);
+    setFormMode(null);
+  }
+
+  function runPlaceFormQuery(next: DestinationQuery) {
+    setDestinationQuery(next);
+    setQuery(null);
+    setAskedByQuestion(false);
+    setActivityInferredFromLocation(false);
+    setLastAsked(null);
+    setFormMode(null);
+  }
+
+  // Form mở đúng loại kết quả đang xem, để nút "Sửa" dẫn tới đúng form.
+  function openForm() {
+    setFormMode(destinationQuery ? 'place' : 'time');
   }
 
   function exploreMonth(month: string) {
@@ -112,6 +135,20 @@ export function AdvisoryPage({ locations, userLocationSlug }: AdvisoryPageProps)
     locations.find(location => location.slug === slug)?.name ?? slug;
   const activityName = (id: string) =>
     activities.data?.find(activity => activity.id === id)?.name ?? id;
+
+  // Giá trị ban đầu của hai form lấy từ kết quả đang xem, kể cả khi đổi sang chế độ kia.
+  const timeFormInitial: AdvisoryQuery = {
+    locationSlug: query?.locationSlug ?? userLocationSlug,
+    activityId: query?.activityId ?? destinationQuery?.activityId ?? '',
+    time: query?.time
+      ?? (destinationQuery
+        ? { startMonth: destinationQuery.month, endMonth: destinationQuery.month }
+        : defaultAdvisoryRange()),
+  };
+  const placeFormInitial: DestinationQuery = destinationQuery ?? {
+    month: query?.time.startMonth ?? upcomingMonths(1)[0],
+    activityId: query?.activityId ?? DEFAULT_DESTINATION_ACTIVITY,
+  };
 
   return (
     <div className="mt-5 space-y-7">
@@ -127,29 +164,33 @@ export function AdvisoryPage({ locations, userLocationSlug }: AdvisoryPageProps)
             void activities.refetch();
           }}
         />
-      ) : showForm ? (
-        <AdvisoryQueryForm
-          locations={locations}
-          activities={activities.data ?? []}
-          initial={
-            {
-              locationSlug: query?.locationSlug ?? userLocationSlug,
-              activityId: query?.activityId ?? destinationQuery?.activityId ?? '',
-              time: query?.time
-                ?? (destinationQuery
-                  ? { startMonth: destinationQuery.month, endMonth: destinationQuery.month }
-                  : defaultAdvisoryRange()),
-            }
-          }
-          onSubmit={runFormQuery}
-          onBackToChat={() => setShowForm(false)}
-        />
+      ) : formMode ? (
+        <AdvisoryFormPanel
+          mode={formMode}
+          onChangeMode={setFormMode}
+          onBackToChat={() => setFormMode(null)}
+        >
+          {formMode === 'time' ? (
+            <AdvisoryQueryForm
+              locations={locations}
+              activities={activities.data ?? []}
+              initial={timeFormInitial}
+              onSubmit={runTimeFormQuery}
+            />
+          ) : (
+            <DestinationQueryForm
+              activities={activities.data ?? []}
+              initial={placeFormInitial}
+              onSubmit={runPlaceFormQuery}
+            />
+          )}
+        </AdvisoryFormPanel>
       ) : (
         <AdvisoryChatBox
           isAsking={isAsking}
           askFailed={askFailed}
           onAsk={question => void ask(question)}
-          onOpenForm={() => setShowForm(true)}
+          onOpenForm={openForm}
         />
       )}
 
@@ -198,7 +239,7 @@ export function AdvisoryPage({ locations, userLocationSlug }: AdvisoryPageProps)
           </span>
           <button
             type="button"
-            onClick={() => setShowForm(true)}
+            onClick={openForm}
             className="focus-ring ml-auto inline-flex items-center gap-1.5 rounded-lg px-2 py-1 font-semibold text-acc hover:bg-card"
           >
             <PencilLine size={14} aria-hidden="true" />
@@ -216,24 +257,25 @@ export function AdvisoryPage({ locations, userLocationSlug }: AdvisoryPageProps)
         />
       )}
 
+      {destinationQuery && askedByQuestion && (
+        <div className="flex flex-wrap items-center gap-x-3 gap-y-2 rounded-2xl bg-acc-soft px-4 py-3 text-sm text-ink2">
+          <span className="font-semibold text-acc">Hiểu là</span>
+          <span>
+            Tìm điểm đến · {formatMonthTitle(destinationQuery.month)} · {activityName(destinationQuery.activityId)}
+          </span>
+          <button
+            type="button"
+            onClick={openForm}
+            className="focus-ring ml-auto inline-flex items-center gap-1.5 rounded-lg px-2 py-1 font-semibold text-acc hover:bg-card"
+          >
+            <PencilLine size={14} aria-hidden="true" />
+            Sửa
+          </button>
+        </div>
+      )}
+
       {destinationQuery && (
-        <>
-          <div className="flex flex-wrap items-center gap-x-3 gap-y-2 rounded-2xl bg-acc-soft px-4 py-3 text-sm text-ink2">
-            <span className="font-semibold text-acc">Hiểu là</span>
-            <span>
-              Tìm điểm đến · {formatMonthTitle(destinationQuery.month)} · {activityName(destinationQuery.activityId)}
-            </span>
-            <button
-              type="button"
-              onClick={() => setShowForm(true)}
-              className="focus-ring ml-auto inline-flex items-center gap-1.5 rounded-lg px-2 py-1 font-semibold text-acc hover:bg-card"
-            >
-              <PencilLine size={14} aria-hidden="true" />
-              Sửa
-            </button>
-          </div>
-          <DestinationRanking month={destinationQuery.month} activityId={destinationQuery.activityId} />
-        </>
+        <DestinationRanking month={destinationQuery.month} activityId={destinationQuery.activityId} />
       )}
 
       {activities.data && <AdvisoryPageFooter activities={activities.data} />}

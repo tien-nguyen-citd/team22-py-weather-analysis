@@ -7,8 +7,7 @@ export type PageTab =
   | "tong-quan"
   | "so-sanh"
   | "lich-su"
-  | "tu-van"
-  | "di-dau";
+  | "tu-van";
 
 interface HeaderProps {
   currentPage: PageTab;
@@ -25,7 +24,6 @@ const TABS: { key: PageTab; label: string }[] = [
   { key: "so-sanh", label: "So sánh" },
   { key: "lich-su", label: "Lịch sử" },
   { key: "tu-van", label: "Tư vấn" },
-  { key: "di-dau", label: "Đi đâu?" },
 ];
 
 export const Header: React.FC<HeaderProps> = ({

@@ -1,6 +1,6 @@
 import type { PageTab } from '../components/Header';
 
-export const PAGE_TABS: PageTab[] = ['tong-quan', 'so-sanh', 'lich-su', 'tu-van', 'di-dau'];
+export const PAGE_TABS: PageTab[] = ['tong-quan', 'so-sanh', 'lich-su', 'tu-van'];
 
 // Địa điểm đang xem được giữ trong history state thay vì trên URL.
 // Không có state thì các trang dùng vị trí của người dùng.
