@@ -75,15 +75,6 @@ ACTIVITY_PROFILES = (
         26,
         "Ưu tiên ít mưa; nhiệt độ trung bình ngày 10–26°C.",
     ),
-    ActivityProfile(
-        "drying",
-        "Phơi quần áo",
-        1.0,
-        0.0,
-        None,
-        None,
-        "Chỉ đánh giá mức ít mưa; chưa đánh giá nắng, độ ẩm hoặc tốc độ khô.",
-    ),
 )
 
 

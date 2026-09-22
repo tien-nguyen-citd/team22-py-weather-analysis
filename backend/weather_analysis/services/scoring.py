@@ -258,17 +258,6 @@ def score_coffee(hour: HourData) -> int:
     return int(clamp(js_round(score), 0, 99))
 
 
-def score_drying(hour: HourData) -> int:
-    score = (
-        100
-        - hour.rain_prob * 1.7
-        - max(0, 28 - hour.temp) * 2.2
-        + min(hour.uv, 6) * 2
-        - (45 if hour.hour < 7 or hour.hour > 16 else 0)
-    )
-    return int(clamp(js_round(score), 0, 99))
-
-
 def calculate_activity_windows(
     hours: list[HourData],
     from_hour: int = 6,
@@ -286,12 +275,6 @@ def calculate_activity_windows(
             "Cà phê ngoài trời",
             "Dễ chịu khi trời khô, không quá nóng",
             score_coffee,
-        ),
-        (
-            "drying",
-            "Phơi quần áo",
-            "Cần nắng liên tục và độ ẩm thấp",
-            score_drying,
         ),
     ]
     activities: list[ActivityWindow] = []

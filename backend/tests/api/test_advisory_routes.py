@@ -41,11 +41,9 @@ def test_activities_catalog_does_not_call_weather_provider(
         "coffee",
         "beach",
         "camping",
-        "drying",
     }
     assert profiles["wedding"]["rainWeight"] == 0.8
-    assert profiles["drying"]["temperatureMin"] is None
-    assert profiles["drying"]["rainThresholdMm"] == 1
+    assert profiles["wedding"]["rainThresholdMm"] == 10
     assert archive_client.calls == []
 
 
@@ -93,7 +91,7 @@ def test_defaults_and_short_month_range(client: Client) -> None:
         "/api/advisory",
         json={
             "locationSlug": "ha-noi",
-            "activityId": "drying",
+            "activityId": "camping",
             "time": {"startMonth": "2028-02", "endMonth": "2028-02"},
         },
     )
@@ -101,7 +99,6 @@ def test_defaults_and_short_month_range(client: Client) -> None:
     last = short.json()["candidates"][-1]
     assert last["window"]["endDate"] == "2028-02-29"
     assert last["sampleDays"] == 80
-    assert last["temperatureScore"] is None
 
 
 @pytest.mark.parametrize(

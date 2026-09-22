@@ -53,7 +53,7 @@ def destination_response(payload: dict[str, Any]) -> dict[str, Any]:
             "phu-quoc", "Phú Quốc", "Tây Nam Bộ", make_history(period, lambda _: (28, 0))
         ),
         DestinationHistory(
-            "vung-tau", "Vũng Tàu", "Đông Nam Bộ", make_history(period, lambda _: (30, 5))
+            "vung-tau", "Vũng Tàu", "Đông Nam Bộ", make_history(period, lambda _: (30, 15))
         ),
     ]
     return DestinationRankingResponse.from_ranking(

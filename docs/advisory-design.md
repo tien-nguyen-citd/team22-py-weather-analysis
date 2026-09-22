@@ -103,18 +103,16 @@ ngưỡng bảo đảm an toàn. Cấu hình tập trung tại
 | `coffee` | Cà phê ngoài trời | 60% / 40% | 20–28°C |
 | `beach` | Tắm biển | 60% / 40% | 25–31°C |
 | `camping` | Cắm trại, leo núi, dã ngoại | 80% / 20% | 18–26°C |
-| `drying` | Phơi quần áo | 100% / 0% | Không chấm |
 
 Với mỗi ngày trong ứng viên lịch sử:
 
-1. Điểm ít mưa bằng 100 nếu lượng mưa **dưới 1 mm**, bằng 0 nếu từ 1 mm trở lên.
+1. Điểm ít mưa bằng 100 nếu lượng mưa **dưới 10 mm**, bằng 0 nếu từ 10 mm trở lên.
+   Ngưỡng 10 mm theo chỉ số R10mm (ngày mưa lớn) do ETCCDI định nghĩa: mức mưa
+   đủ gây ảnh hưởng đáng kể tới kế hoạch ngoài trời, thay vì mọi cơn mưa phùn.
 2. Điểm nhiệt độ bằng 100 trong khoảng ưu tiên. Ngoài khoảng, trừ 10 điểm cho
    mỗi °C cách biên gần nhất, tối thiểu bằng 0.
 3. Lấy trung bình từng thành phần trong mỗi năm, rồi trung bình đều 10 năm.
 4. Điểm tổng = điểm ít mưa × trọng số mưa + điểm nhiệt độ × trọng số nhiệt độ.
-
-Phơi quần áo không có điểm nhiệt độ (`temperatureScore: null`), đóng góp nhiệt độ
-bằng 0. Nhiệt độ trung bình vẫn được trả để tham khảo.
 
 Điểm dùng thang cố định 0–100, không chuẩn hóa theo những ứng viên khác. Việc thêm
 một tháng vào danh sách không làm đổi điểm của tháng cũ. Khi đổi độ phân giải từ
@@ -124,7 +122,7 @@ tháng sang giai đoạn, tập ngày được phân tích thay đổi nên đi�
 
 Giả sử trong **mỗi năm** của 10 năm lịch sử, giai đoạn 1–10/1 có:
 
-- Năm ngày mưa 0,8 mm/ngày, năm ngày mưa 1 mm/ngày.
+- Năm ngày mưa 9,8 mm/ngày, năm ngày mưa 10 mm/ngày.
 - Nhiệt độ trung bình của mọi ngày là 26°C.
 
 Với đám cưới:
@@ -132,7 +130,7 @@ Với đám cưới:
 - Điểm ít mưa: `5 / 10 × 100 = 50`.
 - Điểm nhiệt độ: `100`, vì 26°C nằm trong 20–28°C.
 - Điểm tổng: `50 × 0,8 + 100 × 0,2 = 60`.
-- Tỷ lệ ngày mưa từ 1 mm: `50%`; lượng mưa trung bình: `0,9 mm/ngày`.
+- Tỷ lệ ngày mưa từ 10 mm: `50%`; lượng mưa trung bình: `9,9 mm/ngày`.
 - Mẫu phân tích: 100 ngày thuộc 10 năm.
 
 Đây là dữ liệu minh họa được kiểm chứng bằng unit test, không phải thống kê thực
@@ -292,8 +290,9 @@ baseline 10 năm, nạp lần đầu, dùng lại lịch sử, contract JSON và
 ## Giới hạn diễn giải
 
 - Nhiệt độ trung bình ngày không thể hiện mọi khung giờ hoặc nhiệt độ cực đại.
-- Mưa dưới 1 mm không đồng nghĩa với hoàn toàn không mưa.
+- Mưa dưới 10 mm không đồng nghĩa với không mưa, chỉ là mưa nhỏ.
+- Tổng mưa theo ngày không cho biết mưa rơi vào giờ nào.
 - Điểm cao nhất chỉ là lựa chọn đứng đầu theo tiêu chí trong phạm vi đã hỏi.
 - Lịch sử khí hậu không khẳng định thời tiết vào ngày tổ chức sự kiện.
-- Không suy ra ánh sáng đẹp, an toàn tắm biển, điều kiện leo núi hoặc tốc độ khô
-  của quần áo khi thiếu các biến liên quan.
+- Không suy ra ánh sáng đẹp, an toàn tắm biển hoặc điều kiện leo núi khi thiếu
+  các biến liên quan.

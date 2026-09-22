@@ -17,7 +17,6 @@ def find_activity(matcher: ActivityKeywordMatcher, text: str) -> str | None:
     [
         ("Đám cưới tháng mấy thì đẹp nhất?", "wedding"),
         ("Sáng mai chạy bộ được không?", "running"),
-        ("Hôm nay phơi đồ có khô không?", "drying"),
         ("Cuối tuần tắm biển được không?", "beach"),
         ("Lúc này Đà Lạt có đang mưa không?", None),
     ],
@@ -29,7 +28,7 @@ def test_find_activity_by_keyword(
 
 
 def test_first_keyword_in_question_wins(activity_matcher: ActivityKeywordMatcher) -> None:
-    assert find_activity(activity_matcher, "Phơi cà phê có nắng không?") == "drying"
+    assert find_activity(activity_matcher, "Chụp ảnh cưới ngoài trời được không?") == "photography"
 
 
 def test_activity_examples_only_use_known_activities() -> None:

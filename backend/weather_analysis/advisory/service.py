@@ -28,6 +28,9 @@ from weather_analysis.services.location_service import get_location_by_slug
 ADVICE_NOTES = [
     "Tham khảo từ lịch sử khí hậu, không phải dự báo cho ngày cụ thể.",
     "Điểm phù hợp không phải xác suất thời tiết trong tương lai.",
+    "Ngày mưa là ngày có tổng lượng mưa từ 10 mm, theo chỉ số R10mm (ngày mưa lớn) "
+    "do ETCCDI, nhóm chuyên gia về chỉ số biến đổi khí hậu của WMO, định nghĩa. "
+    "Tổng theo ngày không cho biết mưa rơi vào giờ nào.",
     "Trọng số và khoảng nhiệt độ là quy ước sản phẩm, không phải chuẩn khí tượng.",
     "Chỉ xét lượng mưa và nhiệt độ trung bình ngày; chưa xét gió, nắng, sóng biển hoặc độ ẩm.",
     "Không dùng ngày 29/2 khi tính các chỉ số so sánh giữa các năm.",

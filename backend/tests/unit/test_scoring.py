@@ -11,7 +11,6 @@ from weather_analysis.services.scoring import (
     get_day_why,
     get_rain_window,
     js_round,
-    score_drying,
     score_running,
 )
 
@@ -96,7 +95,6 @@ def test_calculate_factors_matches_existing_labels_and_notes() -> None:
 
 def test_activity_scorers_match_existing_expectations() -> None:
     assert score_running(make_hour(7, temp=24, uv=1)) > 80
-    assert score_drying(make_hour(11, temp=30, uv=6)) > 90
 
 
 def test_activity_uses_highest_scoring_window_not_earliest_window() -> None:

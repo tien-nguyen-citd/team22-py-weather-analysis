@@ -38,7 +38,7 @@ class ActivityProfile:
     temperature_min: float | None
     temperature_max: float | None
     description: str
-    rain_threshold_mm: float = 1.0
+    rain_threshold_mm: float = 10.0
 
 
 @dataclass(frozen=True)

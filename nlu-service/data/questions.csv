@@ -97,17 +97,6 @@ Sáng mai ngồi uống trà đá vỉa hè ở Hải Phòng được không?,ha
 Hôm nay ra quán cà phê ven hồ ở Buôn Ma Thuột có mát không?,buon-ma-thuot,,dates,2026-09-16,2026-09-16,coffee,find_time,basic
 Bây giờ ngồi cà phê ngoài trời có bị nắng gắt không?,,,now,,,coffee,find_time,basic
 Tuần sau đi cafe ở Bảo Lộc có mưa không?,bao-loc,,dates,2026-09-21,2026-09-27,coffee,find_time,basic
-Hôm nay phơi quần áo ở Hà Nội có khô không?,ha-noi,,dates,2026-09-16,2026-09-16,drying,find_time,basic
-Mai có nên giặt chăn đem phơi không?,,,dates,2026-09-17,2026-09-17,drying,find_time,basic
-Lúc này phơi đồ ngoài trời có bị mưa không?,,,now,,,drying,find_time,basic
-Tuần sau ngày nào phơi đồ ở Sài Gòn khô nhất?,ho-chi-minh,,best_time,2026-09-21,2026-09-27,drying,find_time,basic
-phoi do o hue hom nay duoc khong,hue,,dates,2026-09-16,2026-09-16,drying,find_time,basic
-Cuối tuần này phơi chăn màn ở Nam Định có đủ nắng không?,nam-dinh,,dates,2026-09-19,2026-09-20,drying,find_time,basic
-"Tháng 3 ở Hà Nội nồm ẩm, phơi quần áo có khô không?",ha-noi,,months,2027-03-01,2027-03-31,drying,find_time,basic
-Chiều nay phơi thóc ở Thái Bình được không?,thai-binh,,dates,2026-09-16,2026-09-16,drying,find_time,basic
-Mấy ngày tới phơi cà phê ở Đắk Lắk có nắng không?,dak-lak,,dates,2026-09-17,2026-09-19,drying,find_time,basic
-Bây giờ đem đồ ra phơi có kịp khô không?,,,now,,,drying,find_time,basic
-Ngày mai ở Cà Mau phơi đồ được không?,ca-mau,,dates,2026-09-17,2026-09-17,drying,find_time,basic
 Cuối tuần này tắm biển ở Vũng Tàu được không?,vung-tau,,dates,2026-09-19,2026-09-20,beach,find_time,basic
 Tháng mấy tắm biển ở Nha Trang là đẹp nhất?,nha-trang,,best_time,,,beach,find_time,basic
 Tháng 12 đi biển Quy Nhơn có lạnh không?,quy-nhon,,months,2026-12-01,2026-12-31,beach,find_time,basic
@@ -144,9 +133,6 @@ Tuần sau đi pose hình ở Hội An có mưa không?,hoi-an,,dates,2026-09-21
 Tối nay ra quán cóc vỉa hè ở Hà Nội có lạnh không?,ha-noi,,dates,2026-09-16,2026-09-16,coffee,find_time,paraphrase
 Chiều mai hẹn bạn nhâm nhi ly bạc xỉu ngoài trời ở Sài Gòn có mưa không?,ho-chi-minh,,dates,2026-09-17,2026-09-17,coffee,find_time,paraphrase
 Lúc này ngồi ban công uống trà ở Đà Lạt có lạnh không?,da-lat,,now,,,coffee,find_time,paraphrase
-Hôm nay giặt mùng mền ở Cần Thơ có khô kịp không?,can-tho,,dates,2026-09-16,2026-09-16,drying,find_time,paraphrase
-Mai hong đồ ngoài sân ở Huế được không?,hue,,dates,2026-09-17,2026-09-17,drying,find_time,paraphrase
-Chiều nay đem lúa ra sân ở Thái Bình được không?,thai-binh,,dates,2026-09-16,2026-09-16,drying,find_time,paraphrase
 Cuối tuần này xuống Vũng Tàu nghịch nước được không?,vung-tau,,dates,2026-09-19,2026-09-20,beach,find_time,paraphrase
 Ngày mai chèo SUP ở Phú Quốc có sóng không?,phu-quoc,,dates,2026-09-17,2026-09-17,beach,find_time,paraphrase
 Hôm nay nhảy sóng ở Đà Nẵng có an toàn không?,da-nang,,dates,2026-09-16,2026-09-16,beach,find_time,paraphrase
@@ -187,6 +173,5 @@ Tìm cho mình vài thành phố ít mưa trong tháng sau để đi chơi,,,mon
 Tháng 10 ra Cô Tô chơi có ổn không?,,Cô Tô,months,2026-10-01,2026-10-31,travel,find_time,holdout
 Cuối tuần sau lên Tam Cốc chụp hình có mưa không?,,Tam Cốc,dates,2026-09-26,2026-09-27,photography,find_time,holdout
 Tháng 3 đi phượt Hà Giang có lạnh không?,ha-giang,,months,2027-03-01,2027-03-31,travel,find_time,holdout
-Ngày mai ở Cần Thơ phơi lúa được không?,can-tho,,dates,2026-09-17,2026-09-17,drying,find_time,holdout
 Tuần sau chạy bộ quanh hồ Tây buổi sáng có oi không?,,hồ Tây,dates,2026-09-21,2026-09-27,running,find_time,holdout
 Hè này về Sầm Sơn tắm biển thì sao?,,Sầm Sơn,months,2027-05-01,2027-07-31,beach,find_time,holdout

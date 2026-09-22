@@ -1,9 +1,7 @@
 import { describe, expect, it } from 'vitest';
-import type { ActivityProfile } from '../api/advisory';
 import type { QuestionUnderstanding } from '../api/nlu';
 import {
   DEFAULT_DESTINATION_ACTIVITY,
-  destinationActivities,
   formatMonthChip,
   formatMonthTitle,
   toDestinationQuery,
@@ -28,12 +26,6 @@ it('định dạng nhãn chip và tiêu đề tháng', () => {
   expect(formatMonthChip('2026-12')).toBe('Th 12/26');
   expect(formatMonthChip('2027-03')).toBe('Th 3/27');
   expect(formatMonthTitle('2027-03')).toBe('Tháng 3/2027');
-});
-
-it('bỏ hoạt động phơi quần áo và giữ nguyên thứ tự còn lại', () => {
-  const activity = (id: string) => ({ id }) as ActivityProfile;
-  const result = destinationActivities(['general', 'drying', 'travel', 'beach'].map(activity));
-  expect(result.map(item => item.id)).toEqual(['general', 'travel', 'beach']);
 });
 
 describe('toDestinationQuery', () => {

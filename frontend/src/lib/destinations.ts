@@ -10,7 +10,6 @@ import {
   Waves,
   type LucideIcon,
 } from 'lucide-react';
-import type { ActivityProfile } from '../api/advisory';
 import type { QuestionUnderstanding } from '../api/nlu';
 import { vietnamYearMonth } from './advisory';
 
@@ -22,9 +21,6 @@ export interface DestinationQuery {
 
 /** Tab "Đi đâu?" mặc định là Du lịch vì hợp ngữ cảnh chọn điểm đến hơn "Nhu cầu chung". */
 export const DEFAULT_DESTINATION_ACTIVITY = 'travel';
-
-/** Phơi quần áo không có nghĩa khi chọn nơi để đi. */
-const EXCLUDED_ACTIVITY_IDS = new Set(['drying']);
 
 const ACTIVITY_ICONS: Readonly<Record<string, LucideIcon>> = {
   general: Sun,
@@ -55,10 +51,6 @@ export function formatMonthChip(month: string): string {
 /** '2026-12' → 'Tháng 12/2026'. */
 export function formatMonthTitle(month: string): string {
   return `Tháng ${Number(month.slice(5, 7))}/${month.slice(0, 4)}`;
-}
-
-export function destinationActivities(activities: ActivityProfile[]): ActivityProfile[] {
-  return activities.filter(activity => !EXCLUDED_ACTIVITY_IDS.has(activity.id));
 }
 
 export function activityIcon(activityId: string): LucideIcon {

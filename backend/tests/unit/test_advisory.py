@@ -35,8 +35,8 @@ def test_default_request_and_activity_profiles() -> None:
     assert result.top_k == 3
     december = normalize_request(AdvisoryRequest("ha-noi"), date(2026, 12, 31))
     assert december.time == MonthRange("2027-01", "2027-12")
-    assert len(ACTIVITY_PROFILES) == 9
-    assert len({profile.id for profile in ACTIVITY_PROFILES}) == 9
+    assert len(ACTIVITY_PROFILES) == 8
+    assert len({profile.id for profile in ACTIVITY_PROFILES}) == 8
     assert all(
         profile.rain_weight + profile.temperature_weight == 1
         for profile in ACTIVITY_PROFILES
@@ -91,8 +91,8 @@ def test_temperature_score(temperature: float, expected: float) -> None:
 
 
 def test_hand_calculation_and_rain_threshold() -> None:
-    # Mỗi giai đoạn 10 ngày: 5 ngày dưới 1 mm và 5 ngày đúng 1 mm.
-    days = make_history(PERIOD, lambda day: (26.0, 0.8 if day.day <= 5 else 1.0))
+    # Mỗi giai đoạn 10 ngày: 5 ngày dưới 10 mm và 5 ngày đúng 10 mm.
+    days = make_history(PERIOD, lambda day: (26.0, 9.8 if day.day <= 5 else 10.0))
     request = normalize_request(
         AdvisoryRequest("ha-noi", MonthRange("2027-01", "2027-01"), "wedding"), TODAY
     )
@@ -104,7 +104,7 @@ def test_hand_calculation_and_rain_threshold() -> None:
     assert candidate.rain_contribution == 40
     assert candidate.temperature_contribution == 20
     assert candidate.score == 60
-    assert candidate.precipitation_mean == pytest.approx(0.9)
+    assert candidate.precipitation_mean == pytest.approx(9.9)
     assert candidate.sample_years == 10
     assert candidate.sample_days == 100
     assert "50.0 × 80% = 40.0" in candidate.explanation
@@ -115,10 +115,10 @@ def test_hand_calculation_and_rain_threshold() -> None:
 def test_activity_changes_winner_and_candidate_set_does_not_change_score() -> None:
     def weather(day: date) -> tuple[float, float]:
         if day.month == 1:
-            return 22.0, 0.0 if day.day <= 15 else 2.0
+            return 22.0, 0.0 if day.day <= 15 else 20.0
         if day.month == 2:
             return 38.0, 0.0
-        return 40.0, 2.0
+        return 40.0, 20.0
 
     days = make_history(PERIOD, weather)
     request = normalize_request(
@@ -140,7 +140,7 @@ def test_leap_day_is_excluded_and_years_are_equally_weighted() -> None:
     def weather(day: date) -> tuple[float, float]:
         if (day.month, day.day) == (2, 29):
             return -50.0, 1000.0
-        return (20.0, 0.0) if day.year % 2 == 0 else (30.0, 2.0)
+        return (20.0, 0.0) if day.year % 2 == 0 else (30.0, 20.0)
 
     request = normalize_request(
         AdvisoryRequest("ha-noi", MonthRange("2028-02", "2028-02")), TODAY
@@ -149,21 +149,10 @@ def test_leap_day_is_excluded_and_years_are_equally_weighted() -> None:
     last = result.candidates[-1]
     assert last.sample_days == 80
     assert last.temperature_mean == 25
-    assert last.precipitation_mean == 1
+    assert last.precipitation_mean == 10
     assert last.rain_score == 50
     assert last.temperature_score == 90
     assert last.score == 66
-
-
-def test_drying_does_not_score_temperature() -> None:
-    request = normalize_request(
-        AdvisoryRequest("ha-noi", MonthRange("2027-01", "2027-01"), "drying"), TODAY
-    )
-    result = build_advice(request, make_history(PERIOD, lambda _: (-10.0, 0.0)), PERIOD)
-    assert result.recommendations[0].score == 100
-    assert result.recommendations[0].temperature_score is None
-    assert result.recommendations[0].temperature_contribution == 0
-    assert "không chấm nhiệt độ" in result.recommendations[0].explanation
 
 
 def test_ranking_ties_near_scores_and_unrounded_scores() -> None:
