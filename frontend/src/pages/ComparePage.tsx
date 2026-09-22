@@ -2,6 +2,7 @@ import React, { useState, useMemo } from 'react';
 import { keepPreviousData, useQuery } from '@tanstack/react-query';
 import { getLocationComparison } from '../api/climateApi';
 import { findLocationByName } from '../api/locations';
+import { ComparePageFooter } from '../components/ComparePageFooter';
 import { ErrorMessage } from '../components/ErrorMessage';
 import { clamp } from '../lib/scoring';
 import type { LocationItem } from '../types';
@@ -161,7 +162,7 @@ export const ComparePage: React.FC<ComparePageProps> = ({
         </p>
       )}
       <p className="text-[12px] text-m3 px-[4px]">
-        Trung bình 10 năm trước ({comparison.baselinePeriod}) · Nguồn: <a href="https://open-meteo.com/en/docs/historical-weather-api" target="_blank" rel="noreferrer" className="underline hover:text-acc focus-ring">Open-Meteo ERA5</a>
+        Trung bình 10 năm trước ({comparison.baselinePeriod})
       </p>
 
       {/* Hai thẻ điểm */}
@@ -387,6 +388,8 @@ export const ComparePage: React.FC<ComparePageProps> = ({
           {comparison.yearRecommendation}
         </p>
       </div>
+
+      <ComparePageFooter />
     </div>
   );
 };

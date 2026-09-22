@@ -5,11 +5,10 @@ import {
   useLocation,
   Link,
 } from 'react-router-dom';
-import { skipToken, useIsFetching, useQuery, useQueryClient } from '@tanstack/react-query';
+import { skipToken, useQuery } from '@tanstack/react-query';
 import { Header, type PageTab } from './components/Header';
 import { LocationBar } from './components/LocationBar';
 import { OverviewPage } from './pages/OverviewPage';
-import { PlannerPage } from './pages/PlannerPage';
 import { ComparePage } from './pages/ComparePage';
 import { HistoryPage } from './pages/HistoryPage';
 import { AdvisoryPage } from './pages/AdvisoryPage';
@@ -28,35 +27,10 @@ import type { LocationItem } from './types';
 const FAVORITES_STORAGE_KEY = 'nang_mua_favorites';
 const EMPTY_LOCATIONS: LocationItem[] = [];
 
-function formatUpdatedAt(updatedAt: string | undefined): string {
-  if (!updatedAt) return 'Đang cập nhật...';
-
-  const date = new Date(updatedAt);
-  if (Number.isNaN(date.getTime())) return 'Đang cập nhật...';
-
-  const formatter = new Intl.DateTimeFormat('vi-VN', {
-    timeZone: 'Asia/Ho_Chi_Minh',
-    weekday: 'long',
-    day: '2-digit',
-    month: '2-digit',
-    year: 'numeric',
-    hour: '2-digit',
-    minute: '2-digit',
-    hourCycle: 'h23',
-  });
-  const parts = Object.fromEntries(
-    formatter.formatToParts(date).map(part => [part.type, part.value]),
-  );
-  return `${parts.weekday} · ${parts.day}/${parts.month}/${parts.year} · ${parts.hour}:${parts.minute}`;
-}
-
 export const NangMuaApp: React.FC = () => {
   const { locationSlug, page } = useParams<{ locationSlug?: string; page?: string }>();
   const navigate = useNavigate();
   const routerLocation = useLocation();
-  const queryClient = useQueryClient();
-  const climateIsFetching = useIsFetching({ queryKey: ['climate'] });
-  const advisoryIsFetching = useIsFetching({ queryKey: ['advisory'] });
   const locationsQuery = useLocations();
   const locations = locationsQuery.data ?? EMPTY_LOCATIONS;
 
@@ -68,7 +42,7 @@ export const NangMuaApp: React.FC = () => {
   const userLocationState = useUserLocation(locations, currentLocation);
 
   // Selected tab
-  const validPages: PageTab[] = ['tong-quan', 'khung-gio', 'so-sanh', 'lich-su', 'tu-van', 'di-dau'];
+  const validPages: PageTab[] = ['tong-quan', 'so-sanh', 'lich-su', 'tu-van', 'di-dau'];
   const currentPage: PageTab = validPages.includes(page as PageTab)
     ? (page as PageTab)
     : 'tong-quan';
@@ -121,7 +95,6 @@ export const NangMuaApp: React.FC = () => {
     data: weatherData,
     isLoading,
     isError,
-    isFetching,
     refetch,
   } = useQuery({
     queryKey: ['weather', currentLocation?.slug],
@@ -173,13 +146,6 @@ export const NangMuaApp: React.FC = () => {
         <Header
           currentPage={currentPage}
           onSelectPage={handleSelectPage}
-          updatedAt={usesClimateAdvice ? 'Tư vấn từ lịch sử khí hậu' : formatUpdatedAt(weatherData?.updatedAt)}
-          isFetching={isFetching || climateIsFetching > 0 || advisoryIsFetching > 0}
-          onRefresh={() => {
-            void refetch();
-            void queryClient.invalidateQueries({ queryKey: ['climate'] });
-            void queryClient.invalidateQueries({ queryKey: ['advisory'] });
-          }}
           userLocation={userLocationState.userLocation}
           isDetectingUserLocation={userLocationState.isDetecting}
           userLocationError={userLocationState.errorMessage}
@@ -234,10 +200,7 @@ export const NangMuaApp: React.FC = () => {
           />
         ) : (
           weatherData && (
-            <main>
-              {currentPage === 'tong-quan' && <OverviewPage data={weatherData} />}
-              {currentPage === 'khung-gio' && <PlannerPage data={weatherData} />}
-            </main>
+            <main><OverviewPage data={weatherData} /></main>
           )
         )}
 

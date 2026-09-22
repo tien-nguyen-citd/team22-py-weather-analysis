@@ -1,14 +1,13 @@
-import React, { useState } from "react";
+import React from "react";
 import type { LocationForecast } from "../api/forecast";
 import { getScoreColor, getFactorColor } from "../lib/scoring";
+import { OverviewPageFooter } from "../components/OverviewPageFooter";
 
 interface OverviewPageProps {
   data: LocationForecast;
 }
 
 export const OverviewPage: React.FC<OverviewPageProps> = ({ data }) => {
-  const [showWeekForecast, setShowWeekForecast] = useState(true);
-
   return (
     <div className="space-y-[16px] mt-[20px]">
       {/* Row 1: Current Weather & Verdict + Hourly Scores */}
@@ -310,65 +309,55 @@ export const OverviewPage: React.FC<OverviewPageProps> = ({ data }) => {
           </div>
 
           <div className="text-[12.5px] text-m2 leading-[1.55] mt-[22px] border-t border-border pt-[14px]">
-            Điểm sương {data.details.dewPoint}° · {data.location.regionLabel} ·
-            số liệu từ Open-Meteo, cập nhật mỗi giờ
+            Điểm sương {data.details.dewPoint}° · {data.location.regionLabel}
           </div>
         </div>
       </div>
 
       {/* Row 3: Dự báo 7 ngày */}
       <div className="mt-[16px]">
-        <div className="flex items-center justify-between mb-[10px]">
-          <h4 className="font-nunito font-semibold text-[15px] text-ink">
-            Dự báo 7 ngày tới
-          </h4>
-          <button
-            type="button"
-            onClick={() => setShowWeekForecast(!showWeekForecast)}
-            className="text-[12px] text-m1 hover:text-acc transition-colors cursor-pointer"
-          >
-            {showWeekForecast ? "Thu gọn" : "Mở rộng"}
-          </button>
-        </div>
+        <h4 className="font-nunito font-semibold text-[15px] text-ink mb-[10px]">
+          Dự báo 7 ngày tới
+        </h4>
 
-        {showWeekForecast && (
-          <div className="grid grid-cols-2 sm:grid-cols-4 min-[900px]:grid-cols-7 gap-[12px]">
-            {data.daily7.map((day, idx) => (
-              <div
-                key={day.date}
-                className={`bg-card rounded-[18px] p-[18px_14px_16px] shadow-sh2 text-center flex flex-col justify-between ${
-                  idx === 0 ? "border border-acc-soft" : ""
-                }`}
-              >
-                <span className="text-[12.5px] text-m1 block font-medium">
-                  {day.dayLabel}
+        <div className="grid grid-cols-2 sm:grid-cols-4 min-[900px]:grid-cols-7 gap-[12px]">
+          {data.daily7.map((day, idx) => (
+            <div
+              key={day.date}
+              className={`bg-card rounded-[18px] p-[18px_14px_16px] shadow-sh2 text-center flex flex-col justify-between ${
+                idx === 0 ? "border border-acc-soft" : ""
+              }`}
+            >
+              <span className="text-[12.5px] text-m1 block font-medium">
+                {day.dayLabel}
+              </span>
+
+              <div className="my-[10px]">
+                <span className="font-nunito font-semibold text-[24px] text-ink block leading-none">
+                  {day.tempMax}°
                 </span>
-
-                <div className="my-[10px]">
-                  <span className="font-nunito font-semibold text-[24px] text-ink block leading-none">
-                    {day.tempMax}°
-                  </span>
-                  <span className="text-[12px] text-m3 block mt-[4px]">
-                    {day.tempMin}°
-                  </span>
-                </div>
-
-                <div>
-                  <div className="h-[5px] rounded-[3px] bg-track overflow-hidden w-full mb-[6px]">
-                    <div
-                      style={{ width: `${Math.min(100, day.rainProb)}%` }}
-                      className="h-full bg-acc rounded-[3px]"
-                    />
-                  </div>
-                  <span className="text-[11px] text-m2 font-medium">
-                    {day.rainProb}% mưa
-                  </span>
-                </div>
+                <span className="text-[12px] text-m3 block mt-[4px]">
+                  {day.tempMin}°
+                </span>
               </div>
-            ))}
-          </div>
-        )}
+
+              <div>
+                <div className="h-[5px] rounded-[3px] bg-track overflow-hidden w-full mb-[6px]">
+                  <div
+                    style={{ width: `${Math.min(100, day.rainProb)}%` }}
+                    className="h-full bg-acc rounded-[3px]"
+                  />
+                </div>
+                <span className="text-[11px] text-m2 font-medium">
+                  {day.rainProb}% mưa
+                </span>
+              </div>
+            </div>
+          ))}
+        </div>
       </div>
+
+      <OverviewPageFooter />
     </div>
   );
 };

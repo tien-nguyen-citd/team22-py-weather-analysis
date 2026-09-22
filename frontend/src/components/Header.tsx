@@ -1,12 +1,10 @@
 import React, { useEffect, useRef } from "react";
-import { RotateCw } from "lucide-react";
 import { BrandLogo } from "./BrandLogo";
 import { UserLocationPicker } from "./UserLocationPicker";
 import type { LocationItem } from "../types";
 
 export type PageTab =
   | "tong-quan"
-  | "khung-gio"
   | "so-sanh"
   | "lich-su"
   | "tu-van"
@@ -15,9 +13,6 @@ export type PageTab =
 interface HeaderProps {
   currentPage: PageTab;
   onSelectPage: (page: PageTab) => void;
-  updatedAt: string;
-  isFetching?: boolean;
-  onRefresh?: () => void;
   userLocation: LocationItem;
   isDetectingUserLocation: boolean;
   userLocationError: string | null;
@@ -27,7 +22,6 @@ interface HeaderProps {
 
 const TABS: { key: PageTab; label: string }[] = [
   { key: "tong-quan", label: "Tổng quan" },
-  { key: "khung-gio", label: "Khung giờ tốt" },
   { key: "so-sanh", label: "So sánh" },
   { key: "lich-su", label: "Lịch sử" },
   { key: "tu-van", label: "Tư vấn" },
@@ -37,9 +31,6 @@ const TABS: { key: PageTab; label: string }[] = [
 export const Header: React.FC<HeaderProps> = ({
   currentPage,
   onSelectPage,
-  updatedAt,
-  isFetching,
-  onRefresh,
   userLocation,
   isDetectingUserLocation,
   userLocationError,
@@ -81,21 +72,7 @@ export const Header: React.FC<HeaderProps> = ({
         </nav>
       </div>
 
-      {/* Date time, refresh & user location */}
       <div className="ml-auto flex flex-wrap items-center justify-end gap-[10px]">
-        <span className="text-[12.5px] text-m2">{updatedAt}</span>
-        {onRefresh && (
-          <button
-            type="button"
-            onClick={onRefresh}
-            title="Làm mới dữ liệu"
-            className="p-[6px] rounded-full text-m1 hover:text-acc hover:bg-tint transition-colors focus-ring cursor-pointer"
-          >
-            <RotateCw
-              className={`w-[14px] h-[14px] ${isFetching ? "animate-spin text-acc" : ""}`}
-            />
-          </button>
-        )}
         <UserLocationPicker
           userLocation={userLocation}
           isDetecting={isDetectingUserLocation}
