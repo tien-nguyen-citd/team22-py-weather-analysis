@@ -16,12 +16,39 @@ export interface UnderstandRequest {
   today: string;
 }
 
+export type NluDecisionSource =
+  | 'location'
+  | 'keyword'
+  | 'best_time'
+  | 'no_words'
+  | 'nearest_examples';
+
+export interface NluNeighbor {
+  label: string | null;
+  text: string;
+  similarity: number;
+}
+
+export interface NluDecision {
+  source: NluDecisionSource;
+  matchedText: string | null;
+  neighbors: NluNeighbor[];
+}
+
+export interface NluDebug {
+  embeddingText: string;
+  locationText: string | null;
+  activity: NluDecision;
+  intent: NluDecision;
+}
+
 export interface QuestionUnderstanding {
   locationSlug: string | null;
   locationFromQuestion: boolean;
   activityId: string | null;
   time: NluTimeSlot | null;
   intent: NluIntent;
+  debug: NluDebug | null;
 }
 
 export function understandQuestion(

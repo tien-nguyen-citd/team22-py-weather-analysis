@@ -2,6 +2,7 @@ from fastapi import APIRouter
 
 from weather_nlu.api.dependencies import Extractor, ReferenceDate
 from weather_nlu.api.schemas import (
+    DebugResponse,
     HealthResponse,
     TimeSlotResponse,
     UnderstandRequest,
@@ -30,6 +31,11 @@ def understand(
         activity_id=result.activity_id,
         time=TimeSlotResponse.from_slot(result.time) if result.time else None,
         intent=result.intent,
+        debug=(
+            DebugResponse.from_explanation(result.explanation)
+            if result.explanation
+            else None
+        ),
     )
 
 

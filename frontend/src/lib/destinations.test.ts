@@ -47,6 +47,7 @@ describe('toDestinationQuery', () => {
     activityId,
     time,
     intent: 'find_place',
+    debug: null,
   });
 
   it.each([

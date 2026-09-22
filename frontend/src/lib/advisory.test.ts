@@ -20,6 +20,7 @@ function understanding(
     activityId: 'camping',
     time,
     intent: 'find_time',
+    debug: null,
     ...overrides,
   };
 }

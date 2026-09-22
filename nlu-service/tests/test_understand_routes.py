@@ -6,7 +6,16 @@ from fastapi.testclient import TestClient
 
 from weather_nlu.api.app import app
 from weather_nlu.api.dependencies import get_extractor, get_reference_date
-from weather_nlu.question_info import Intent, QuestionInfo, TimeKind, TimeSlot
+from weather_nlu.question_info import (
+    Decision,
+    DecisionSource,
+    ExtractionExplanation,
+    Intent,
+    Neighbor,
+    QuestionInfo,
+    TimeKind,
+    TimeSlot,
+)
 
 
 class FakeExtractor:
@@ -26,6 +35,17 @@ class FakeExtractor:
                     date(2026, 11, 30),
                 ),
                 activity_id="travel",
+                explanation=ExtractionExplanation(
+                    embedding_text="Mùa này đi   có hợp không?",
+                    location_text="Phú Quốc",
+                    activity=Decision(
+                        DecisionSource.NEAREST_EXAMPLES,
+                        neighbors=(
+                            Neighbor("travel", "Mùa này đi xa có hợp không?", 0.81234),
+                        ),
+                    ),
+                    intent=Decision(DecisionSource.LOCATION),
+                ),
             )
         if question == "Tháng 12 đi biển ở đâu?":
             return QuestionInfo(
@@ -75,6 +95,22 @@ def test_understand_returns_all_extracted_information(client: TestClient) -> Non
             "endDate": "2026-11-30",
         },
         "intent": "find_time",
+        "debug": {
+            "embeddingText": "Mùa này đi   có hợp không?",
+            "locationText": "Phú Quốc",
+            "activity": {
+                "source": "nearest_examples",
+                "matchedText": None,
+                "neighbors": [
+                    {
+                        "label": "travel",
+                        "text": "Mùa này đi xa có hợp không?",
+                        "similarity": 0.812,
+                    }
+                ],
+            },
+            "intent": {"source": "location", "matchedText": None, "neighbors": []},
+        },
     }
 
 

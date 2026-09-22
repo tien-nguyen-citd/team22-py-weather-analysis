@@ -2,13 +2,15 @@ import { useState } from 'react';
 import { skipToken, useQuery } from '@tanstack/react-query';
 import { LoaderCircle, PencilLine } from 'lucide-react';
 import { getAdvice, getAdvisoryActivities } from '../api/advisory';
-import { understandQuestion } from '../api/nlu';
+import { understandQuestion, type NluDebug, type QuestionUnderstanding } from '../api/nlu';
 import { AdvisoryChatBox } from '../components/AdvisoryChatBox';
 import { AdvisoryPageFooter } from '../components/AdvisoryPageFooter';
 import { AdvisoryQueryForm } from '../components/AdvisoryQueryForm';
 import { AdvisoryResults } from '../components/AdvisoryResults';
 import { DestinationRanking } from '../components/DestinationRanking';
 import { ErrorMessage } from '../components/ErrorMessage';
+import { NluDebugPanel } from '../components/NluDebugPanel';
+import { useKeyboardToggle } from '../hooks/useKeyboardToggle';
 import {
   defaultAdvisoryRange,
   formatAdvisoryDate,
@@ -18,9 +20,15 @@ import {
   type AdvisoryQuery,
 } from '../lib/advisory';
 import { formatMonthTitle, toDestinationQuery, type DestinationQuery } from '../lib/destinations';
+import { isNluDebugShortcut } from '../lib/nluDebug';
 import type { LocationItem } from '../types';
 
 const TOP_K = 2;
+
+interface AskedQuestion {
+  question: string;
+  understanding: QuestionUnderstanding & { debug: NluDebug };
+}
 
 interface AdvisoryPageProps {
   locations: LocationItem[];
@@ -35,6 +43,8 @@ export function AdvisoryPage({ locations, userLocationSlug }: AdvisoryPageProps)
   const [destinationQuery, setDestinationQuery] = useState<DestinationQuery | null>(null);
   const [askedByQuestion, setAskedByQuestion] = useState(false);
   const [activityInferredFromLocation, setActivityInferredFromLocation] = useState(false);
+  const [lastAsked, setLastAsked] = useState<AskedQuestion | null>(null);
+  const showNluDebug = useKeyboardToggle(isNluDebugShortcut);
 
   const activities = useQuery({
     queryKey: ['advisory', 'activities'],
@@ -61,6 +71,8 @@ export function AdvisoryPage({ locations, userLocationSlug }: AdvisoryPageProps)
         currentLocationSlug: userLocationSlug,
         today: vietnamToday(now),
       });
+      const { debug } = understood;
+      setLastAsked(debug ? { question, understanding: { ...understood, debug } } : null);
       if (understood.intent === 'find_place') {
         setDestinationQuery(toDestinationQuery(understood, now));
         setQuery(null);
@@ -87,6 +99,7 @@ export function AdvisoryPage({ locations, userLocationSlug }: AdvisoryPageProps)
     setDestinationQuery(null);
     setAskedByQuestion(false);
     setActivityInferredFromLocation(false);
+    setLastAsked(null);
     setShowForm(false);
   }
 
@@ -138,6 +151,10 @@ export function AdvisoryPage({ locations, userLocationSlug }: AdvisoryPageProps)
           onAsk={question => void ask(question)}
           onOpenForm={() => setShowForm(true)}
         />
+      )}
+
+      {showNluDebug && lastAsked && (
+        <NluDebugPanel question={lastAsked.question} understanding={lastAsked.understanding} />
       )}
 
       <div aria-live="polite" aria-atomic="true">

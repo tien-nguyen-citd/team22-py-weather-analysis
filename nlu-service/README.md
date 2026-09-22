@@ -154,6 +154,21 @@ Khi không đọc được câu hỏi, service trả `find_time`. Mỗi câu h�
 4. Gán nhãn intent cho các câu liên quan trong `data/questions.csv` rồi chạy
    `python -m weather_nlu.evaluate` và `pytest -m model` để kiểm tra độ chính xác.
 
+## Xem vì sao câu hỏi được hiểu như vậy
+
+Response của `POST /nlu/understand` có thêm trường `debug`:
+
+- `embeddingText`: phần câu hỏi đưa vào MiniLM, sau khi bỏ tên địa điểm và từ
+  khóa hoạt động.
+- `locationText`: tên địa điểm khớp trong câu.
+- `activity`, `intent`: `source` là bước cho ra kết quả (`location`, `keyword`,
+  `best_time`, `no_words`, `nearest_examples`), `matchedText` là từ khóa đã khớp,
+  `neighbors` là các câu mẫu gần nhất kèm similarity khi kết quả đến từ k-NN.
+  Danh sách này gồm cả bản không dấu của câu mẫu.
+
+Trên trang Tư vấn, nhấn **Ctrl + Alt + Backspace** để bật hoặc tắt khung "Chi tiết
+phân tích NLU" cho câu hỏi gần nhất.
+
 ## Dữ liệu dùng chung và giới hạn
 
 - Địa điểm được nhận ra bằng cách tra tên và tên gọi khác, ví dụ SG, Sài Thành,

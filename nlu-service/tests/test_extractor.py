@@ -8,7 +8,7 @@ from weather_nlu.activities import ActivityExample, ActivityKeywordMatcher, load
 from weather_nlu.extractor import NearestExampleClassifier, RuleMiniLmExtractor
 from weather_nlu.intents import IntentExample, IntentKeywordMatcher, load_intents
 from weather_nlu.locations import LocationMatcher, load_locations
-from weather_nlu.question_info import Intent
+from weather_nlu.question_info import DecisionSource, ExtractionExplanation, Intent
 from weather_nlu.text import remove_diacritics
 
 
@@ -169,6 +169,59 @@ def test_all_activity_phrases_are_removed(
     [[encoded]] = encoded_after_setup(encoder)
     assert "chạy" not in encoded
     assert "marathon" not in encoded
+
+
+def explain(extractor: RuleMiniLmExtractor, question: str) -> ExtractionExplanation:
+    explanation = extractor.extract(question, TODAY).explanation
+    assert explanation is not None
+    return explanation
+
+
+def test_explanation_shows_matched_location_and_keyword(
+    extractor: RuleMiniLmExtractor,
+) -> None:
+    explanation = explain(extractor, "Uống cafe ở Vũng Tàu")
+
+    assert explanation.location_text == "Vũng Tàu"
+    assert explanation.activity.source == DecisionSource.KEYWORD
+    assert explanation.activity.matched_text == "cafe"
+    assert explanation.intent.source == DecisionSource.LOCATION
+
+
+def test_explanation_shows_intent_keyword(extractor: RuleMiniLmExtractor) -> None:
+    explanation = explain(extractor, "Tháng 12 đi biển ở đâu?")
+
+    assert explanation.intent.source == DecisionSource.KEYWORD
+    assert explanation.intent.matched_text == "ở đâu"
+
+
+def test_explanation_shows_best_time_question(extractor: RuleMiniLmExtractor) -> None:
+    explanation = explain(extractor, "Gợi ý đám cưới tháng mấy thì đẹp nhất?")
+
+    assert explanation.intent.source == DecisionSource.BEST_TIME
+
+
+def test_explanation_shows_question_without_remaining_words(
+    extractor: RuleMiniLmExtractor,
+) -> None:
+    explanation = explain(extractor, "cafe")
+
+    assert explanation.embedding_text.strip() == ""
+    assert explanation.intent.source == DecisionSource.NO_WORDS
+
+
+def test_explanation_lists_nearest_examples(extractor: RuleMiniLmExtractor) -> None:
+    explanation = explain(extractor, "Tháng 7 trời có oi bức không?")
+
+    assert explanation.embedding_text == "Tháng 7 trời có oi bức không?"
+    assert explanation.intent.source == DecisionSource.NEAREST_EXAMPLES
+    neighbors = explanation.intent.neighbors
+    assert len(neighbors) == 3
+    similarities = [neighbor.similarity for neighbor in neighbors]
+    assert similarities == sorted(similarities, reverse=True)
+    assert neighbors[0].label == Intent.FIND_TIME
+    # Câu mẫu không dấu cũng được liệt kê để thấy câu hỏi khớp với bản nào.
+    assert "Troi hom nay the nao?" in [neighbor.text for neighbor in neighbors]
 
 
 # Mỗi câu mẫu có thêm một bản không dấu nên được tính hai lần khi bỏ phiếu.
