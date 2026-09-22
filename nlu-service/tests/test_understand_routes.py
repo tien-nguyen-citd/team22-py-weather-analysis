@@ -99,6 +99,7 @@ def test_understand_returns_all_extracted_information(client: TestClient) -> Non
             "embeddingText": "Mùa này đi   có hợp không?",
             "locationText": "Phú Quốc",
             "activity": {
+                "method": "minilm",
                 "source": "nearest_examples",
                 "matchedText": None,
                 "neighbors": [
@@ -109,7 +110,12 @@ def test_understand_returns_all_extracted_information(client: TestClient) -> Non
                     }
                 ],
             },
-            "intent": {"source": "location", "matchedText": None, "neighbors": []},
+            "intent": {
+                "method": "rule",
+                "source": "location",
+                "matchedText": None,
+                "neighbors": [],
+            },
         },
     }
 

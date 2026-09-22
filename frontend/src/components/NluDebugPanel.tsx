@@ -17,6 +17,13 @@ function DecisionDetail({ title, result, decision }: {
       <p>
         <span className="font-semibold text-ink">{title}:</span>{' '}
         <code className="rounded bg-bg px-1.5 py-0.5">{result}</code>{' '}
+        <span
+          className={`rounded-full px-2 py-0.5 text-xs font-semibold ${
+            decision.method === 'minilm' ? 'bg-acc text-acc-ink' : 'bg-acc-soft text-acc'
+          }`}
+        >
+          {decision.method === 'minilm' ? 'MiniLM' : 'Rule'}
+        </span>{' '}
         <span className="text-m1">
           ← {DECISION_SOURCE_LABELS[decision.source]}
           {decision.matchedText && <> “{decision.matchedText}”</>}

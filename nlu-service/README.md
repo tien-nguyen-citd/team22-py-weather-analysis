@@ -161,7 +161,8 @@ Response của `POST /nlu/understand` có thêm trường `debug`:
 - `embeddingText`: phần câu hỏi đưa vào MiniLM, sau khi bỏ tên địa điểm và từ
   khóa hoạt động.
 - `locationText`: tên địa điểm khớp trong câu.
-- `activity`, `intent`: `source` là bước cho ra kết quả (`location`, `keyword`,
+- `activity`, `intent`: `method` là `rule` hoặc `minilm` (chỉ `nearest_examples`
+  mới dùng MiniLM), `source` là bước cho ra kết quả (`location`, `keyword`,
   `best_time`, `no_words`, `nearest_examples`), `matchedText` là từ khóa đã khớp,
   `neighbors` là các câu mẫu gần nhất kèm similarity khi kết quả đến từ k-NN.
   Danh sách này gồm cả bản không dấu của câu mẫu.

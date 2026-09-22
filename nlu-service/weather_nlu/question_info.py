@@ -38,6 +38,19 @@ class DecisionSource(StrEnum):
     NO_WORDS = "no_words"  # bỏ địa điểm và từ khóa xong không còn chữ nào
     NEAREST_EXAMPLES = "nearest_examples"  # bỏ phiếu theo các câu mẫu gần nhất
 
+    @property
+    def method(self) -> "DecisionMethod":
+        if self == DecisionSource.NEAREST_EXAMPLES:
+            return DecisionMethod.MINILM
+        return DecisionMethod.RULE
+
+
+class DecisionMethod(StrEnum):
+    """Kết quả đến từ quy tắc, từ khóa hay từ embedding MiniLM."""
+
+    RULE = "rule"
+    MINILM = "minilm"
+
 
 # Covariant để Neighbor[Intent] dùng được ở chỗ cần Neighbor[str | None].
 LabelT = TypeVar("LabelT", covariant=True)

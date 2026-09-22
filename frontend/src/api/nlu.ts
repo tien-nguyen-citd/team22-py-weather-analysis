@@ -29,7 +29,10 @@ export interface NluNeighbor {
   similarity: number;
 }
 
+export type NluDecisionMethod = 'rule' | 'minilm';
+
 export interface NluDecision {
+  method: NluDecisionMethod;
   source: NluDecisionSource;
   matchedText: string | null;
   neighbors: NluNeighbor[];

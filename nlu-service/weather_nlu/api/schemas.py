@@ -6,6 +6,7 @@ from pydantic.alias_generators import to_camel
 
 from weather_nlu.question_info import (
     Decision,
+    DecisionMethod,
     DecisionSource,
     ExtractionExplanation,
     Intent,
@@ -63,6 +64,7 @@ class NeighborResponse(CamelResponse):
 
 
 class DecisionResponse(CamelResponse):
+    method: DecisionMethod
     source: DecisionSource
     matched_text: str | None
     neighbors: list[NeighborResponse]
@@ -70,6 +72,7 @@ class DecisionResponse(CamelResponse):
     @classmethod
     def from_decision(cls, decision: Decision) -> Self:
         return cls(
+            method=decision.source.method,
             source=decision.source,
             matched_text=decision.matched_text,
             neighbors=[NeighborResponse.from_neighbor(item) for item in decision.neighbors],
