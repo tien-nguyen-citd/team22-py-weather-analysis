@@ -36,11 +36,12 @@ def test_activities_catalog_does_not_call_weather_provider(
         "general",
         "travel",
         "wedding",
-        "running",
+        "sports",
         "photography",
-        "coffee",
         "beach",
         "camping",
+        "construction",
+        "outdoor_event",
     }
     assert profiles["wedding"]["rainWeight"] == 0.8
     assert profiles["wedding"]["rainThresholdMm"] == 10

@@ -91,10 +91,10 @@ def test_location_only_has_no_explicit_activity(
 def test_explicit_activity_wins_for_location(
     extractor: RuleMiniLmExtractor,
 ) -> None:
-    result = extractor.extract("Uống cafe ở Vũng Tàu", TODAY)
+    result = extractor.extract("Chụp ảnh ở Vũng Tàu", TODAY)
 
     assert result.location_slug == "vung-tau"
-    assert result.activity_id == "coffee"
+    assert result.activity_id == "photography"
 
 
 def test_question_with_known_location_finds_time(
@@ -180,11 +180,11 @@ def explain(extractor: RuleMiniLmExtractor, question: str) -> ExtractionExplanat
 def test_explanation_shows_matched_location_and_keyword(
     extractor: RuleMiniLmExtractor,
 ) -> None:
-    explanation = explain(extractor, "Uống cafe ở Vũng Tàu")
+    explanation = explain(extractor, "Chụp ảnh ở Vũng Tàu")
 
     assert explanation.location_text == "Vũng Tàu"
     assert explanation.activity.source == DecisionSource.KEYWORD
-    assert explanation.activity.matched_text == "cafe"
+    assert explanation.activity.matched_text == "Chụp ảnh"
     assert explanation.intent.source == DecisionSource.LOCATION
 
 
@@ -204,7 +204,7 @@ def test_explanation_shows_best_time_question(extractor: RuleMiniLmExtractor) ->
 def test_explanation_shows_question_without_remaining_words(
     extractor: RuleMiniLmExtractor,
 ) -> None:
-    explanation = explain(extractor, "cafe")
+    explanation = explain(extractor, "chụp ảnh")
 
     assert explanation.embedding_text.strip() == ""
     assert explanation.intent.source == DecisionSource.NO_WORDS

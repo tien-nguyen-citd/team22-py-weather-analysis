@@ -97,10 +97,10 @@ describe('Quy đổi kết quả đọc câu hỏi', () => {
     const result = toAdvisoryQuery(understanding(null, {
       locationSlug: 'vung-tau',
       locationFromQuestion: true,
-      activityId: 'coffee',
+      activityId: 'outdoor_event',
     }), 'ha-noi', NOW);
 
-    expect(result.activityId).toBe('coffee');
+    expect(result.activityId).toBe('outdoor_event');
   });
 
   it('dùng nhu cầu chung cho địa điểm không có hoạt động đặc trưng', () => {

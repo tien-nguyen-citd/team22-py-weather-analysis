@@ -13,6 +13,9 @@ from weather_analysis.services.climate_service import ClimateDataError
 
 
 TEMPERATURE_PENALTY_PER_DEGREE = 10.0
+# Tỷ lệ ngày mưa lớn còn chấp nhận được (khoảng 3 ngày/tháng); vượt mức này thì trừ nhanh.
+RAIN_TOLERANCE_PERCENT = 10.0
+RAIN_PENALTY_PER_PERCENT = 2.5
 SIMILAR_SCORE_GAP = 3.0
 LOW_SUITABILITY_SCORE = 50.0
 BASELINE_YEARS = 10
@@ -21,6 +24,11 @@ BASELINE_YEARS = 10
 def temperature_score(temperature: float, minimum: float, maximum: float) -> float:
     distance = max(minimum - temperature, temperature - maximum, 0.0)
     return max(0.0, 100.0 - distance * TEMPERATURE_PENALTY_PER_DEGREE)
+
+
+def rain_score(rainy_day_percentage: float) -> float:
+    excess = max(rainy_day_percentage - RAIN_TOLERANCE_PERCENT, 0.0)
+    return max(0.0, 100.0 - excess * RAIN_PENALTY_PER_PERCENT)
 
 
 def group_history(
@@ -81,13 +89,14 @@ def _score_candidate(
     if len(yearly_days) != BASELINE_YEARS or any(not days for days in yearly_days):
         raise ClimateDataError("Dữ liệu lịch sử chưa đủ 10 năm cho ứng viên")
 
-    rain_score = fmean(
+    rainy_day_percentage = fmean(
         fmean(
-            100.0 if day.precipitation_sum < activity.rain_threshold_mm else 0.0
+            100.0 if day.precipitation_sum >= activity.rain_threshold_mm else 0.0
             for day in days
         )
         for days in yearly_days
     )
+    dry_score = rain_score(rainy_day_percentage)
     minimum, maximum = activity.temperature_min, activity.temperature_max
     temp_score = (
         None
@@ -100,18 +109,18 @@ def _score_candidate(
             for days in yearly_days
         )
     )
-    rain_contribution = activity.rain_weight * rain_score
+    rain_contribution = activity.rain_weight * dry_score
     temperature_contribution = activity.temperature_weight * (temp_score or 0.0)
     candidate = Candidate(
         window=window,
         temperature_mean=fmean(
             fmean(day.temperature_mean for day in days) for days in yearly_days
         ),
-        rainy_day_percentage=100.0 - rain_score,
+        rainy_day_percentage=rainy_day_percentage,
         precipitation_mean=fmean(
             fmean(day.precipitation_sum for day in days) for days in yearly_days
         ),
-        rain_score=rain_score,
+        rain_score=dry_score,
         temperature_score=temp_score,
         rain_contribution=rain_contribution,
         temperature_contribution=temperature_contribution,
@@ -128,6 +137,8 @@ def explain_candidate(candidate: Candidate, activity: ActivityProfile) -> str:
         f"{candidate.window.label}: nhiệt độ trung bình ngày {candidate.temperature_mean:.1f}°C; "
         f"{candidate.rainy_day_percentage:.1f}% ngày có mưa từ {activity.rain_threshold_mm:g} mm; "
         f"lượng mưa trung bình {candidate.precipitation_mean:.1f} mm/ngày. "
+        f"Tối đa {RAIN_TOLERANCE_PERCENT:g}% ngày mưa vẫn đạt trọn điểm ít mưa, "
+        f"vượt thêm mỗi 1% trừ {RAIN_PENALTY_PER_PERCENT:g} điểm. "
         f"Điểm ít mưa {candidate.rain_score:.1f} × {activity.rain_weight:.0%} "
         f"= {candidate.rain_contribution:.1f} điểm"
     )

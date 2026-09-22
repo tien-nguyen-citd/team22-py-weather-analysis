@@ -16,7 +16,9 @@ def find_activity(matcher: ActivityKeywordMatcher, text: str) -> str | None:
     ("text", "activity_id"),
     [
         ("Đám cưới tháng mấy thì đẹp nhất?", "wedding"),
-        ("Sáng mai chạy bộ được không?", "running"),
+        ("Sáng mai chạy bộ được không?", "sports"),
+        ("Tháng mấy đổ bê tông mái nhà?", "construction"),
+        ("Khai trương cửa hàng cuối tuần có mưa không?", "outdoor_event"),
         ("Cuối tuần tắm biển được không?", "beach"),
         ("Lúc này Đà Lạt có đang mưa không?", None),
     ],

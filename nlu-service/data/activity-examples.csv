@@ -33,16 +33,16 @@ wedding,Tiệc cưới sân vườn cần trời khô ráo
 wedding,Hai đứa định kết hôn vào cuối năm
 wedding,Ngày đại hỷ có nắng đẹp không?
 wedding,Đãi tiệc cưới ngoài bãi biển được không?
-running,Đi chạy bộ buổi sáng có ổn không?
-running,Tập thể dục ngoài trời có nóng quá không?
-running,Chạy marathon có bị nắng gắt không?
-running,Đạp xe đường dài có mưa không?
-running,Chơi bóng đá ngoài sân được không?
-running,Đi bộ quanh hồ buổi tối được không?
-running,Chơi cầu lông ngoài trời có gió không?
-running,Tham gia giải chạy có mát không?
-running,Tập yoga ở công viên được không?
-running,Chạy bộ đường núi có trơn không?
+sports,Đi chạy bộ buổi sáng có ổn không?
+sports,Tập thể dục ngoài trời có nóng quá không?
+sports,Chạy marathon có bị nắng gắt không?
+sports,Đạp xe đường dài có mưa không?
+sports,Chơi bóng đá ngoài sân được không?
+sports,Đi bộ quanh hồ buổi tối được không?
+sports,Chơi cầu lông ngoài trời có gió không?
+sports,Tham gia giải chạy có mát không?
+sports,Tập yoga ở công viên được không?
+sports,Chạy bộ đường núi có trơn không?
 photography,Chụp ảnh ngoài trời có đủ nắng không?
 photography,Đi săn mây có đẹp không?
 photography,Chụp hình hoàng hôn có bị mây che không?
@@ -53,16 +53,6 @@ photography,Chụp bộ ảnh kỷ niệm ngoài trời
 photography,Săn ảnh hoa nở có đẹp không?
 photography,Chụp ảnh phong cảnh cần trời trong
 photography,Chụp ảnh sống ảo ở đồi chè được không?
-coffee,Ngồi cà phê ngoài trời có lạnh không?
-coffee,Đi cafe vỉa hè được không?
-coffee,Uống trà đá ven đường có nóng không?
-coffee,Ngồi quán cà phê sân thượng có mưa không?
-coffee,Hẹn bạn ngồi cafe ngoài trời
-coffee,Uống cà phê ngắm phố có dễ chịu không?
-coffee,Ngồi trà chanh buổi tối được không?
-coffee,Đi quán cafe ven hồ có mát không?
-coffee,Ngồi uống nước ngoài trời có nắng không?
-coffee,Ra quán cóc đầu ngõ ngồi được không?
 beach,Tắm biển có sóng to không?
 beach,Đi biển có an toàn không?
 beach,Bơi ở bãi biển được không?
@@ -83,3 +73,23 @@ camping,Đốt lửa trại ngoài trời được không?
 camping,Chinh phục đỉnh núi có sương mù không?
 camping,Đi glamping ven hồ có ổn không?
 camping,Cả lớp đi dã ngoại ngoài bãi cỏ
+construction,Cất nhà mới cho gia đình
+construction,Đào móng công trình nhà phố
+construction,Thợ hồ trộn vữa xây tường gạch
+construction,Rải nhựa mặt đường liên xã
+construction,Dựng khung thép nhà xưởng
+construction,Chống thấm sân thượng và mái
+construction,Lát gạch sân vườn
+construction,Cẩu tháp trên công trường
+construction,Ép cọc móng cho tòa nhà
+construction,Công nhân làm việc ngoài công trường
+outdoor_event,Dựng rạp sân khấu ngoài trời
+outdoor_event,Công ty tổ chức hội thao cho nhân viên
+outdoor_event,Phiên chợ cuối tuần ở quảng trường
+outdoor_event,Chiếu phim ngoài trời cho khán giả
+outdoor_event,Lễ khánh thành có đông khách mời
+outdoor_event,Tiệc tất niên công ty ngoài sân vườn
+outdoor_event,Gian hàng triển lãm ngoài trời
+outdoor_event,Đêm nhạc acoustic dưới trời sao
+outdoor_event,Ngày hội gia đình của trường học
+outdoor_event,Lễ khai giảng ngoài sân trường

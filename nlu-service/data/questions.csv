@@ -63,18 +63,18 @@ Kết hôn vào mùa thu ở Hà Nội có đẹp không?,ha-noi,,months,2026-08
 "Tôi muốn cưới ở Hạ Long vào tháng 5, thời tiết thế nào?",,Hạ Long,months,2027-05-01,2027-05-31,wedding,find_time,basic
 Tổ chức lễ cưới vào 20/10 ở Hải Dương được không?,hai-duong,,dates,2026-10-20,2026-10-20,wedding,find_time,basic
 Mùa này làm đám cưới có bị mưa nhiều không?,,,months,2026-09-01,2026-11-30,wedding,find_time,basic
-Sáng mai chạy bộ ở Hà Nội được không?,ha-noi,,dates,2026-09-17,2026-09-17,running,find_time,basic
-Hôm nay có nên đi chạy bộ ở công viên không?,,,dates,2026-09-16,2026-09-16,running,find_time,basic
-Tuần sau ngày nào chạy bộ ở Đà Nẵng hợp nhất?,da-nang,,best_time,2026-09-21,2026-09-27,running,find_time,basic
-Tháng 12 chạy marathon ở Đà Lạt có lạnh quá không?,da-lat,,months,2026-12-01,2026-12-31,running,find_time,basic
-Lúc này ra ngoài chạy bộ ở Sài Gòn có nóng không?,ho-chi-minh,,now,,,running,find_time,basic
-Cuối tuần đạp xe ở Ninh Bình có mưa không?,ninh-binh,,dates,2026-09-19,2026-09-20,running,find_time,basic
-chieu nay chay bo o hue duoc khong,hue,,dates,2026-09-16,2026-09-16,running,find_time,basic
-Mấy ngày tới đi bộ tập thể dục buổi sáng ở Vinh được không?,vinh,,dates,2026-09-17,2026-09-19,running,find_time,basic
-Tháng mấy chạy giải ở Quy Nhơn là mát nhất?,quy-nhon,,best_time,,,running,find_time,basic
-Bây giờ đá bóng ngoài trời có ổn không?,,,now,,,running,find_time,basic
-Tháng 3 chạy trail ở Sa Pa có hợp không?,sa-pa,,months,2027-03-01,2027-03-31,running,find_time,basic
-Sáng nay tập thể dục ngoài trời ở Hải Phòng có ổn không?,hai-phong,,dates,2026-09-16,2026-09-16,running,find_time,basic
+Sáng mai chạy bộ ở Hà Nội được không?,ha-noi,,dates,2026-09-17,2026-09-17,sports,find_time,basic
+Hôm nay có nên đi chạy bộ ở công viên không?,,,dates,2026-09-16,2026-09-16,sports,find_time,basic
+Tuần sau ngày nào chạy bộ ở Đà Nẵng hợp nhất?,da-nang,,best_time,2026-09-21,2026-09-27,sports,find_time,basic
+Tháng 12 chạy marathon ở Đà Lạt có lạnh quá không?,da-lat,,months,2026-12-01,2026-12-31,sports,find_time,basic
+Lúc này ra ngoài chạy bộ ở Sài Gòn có nóng không?,ho-chi-minh,,now,,,sports,find_time,basic
+Cuối tuần đạp xe ở Ninh Bình có mưa không?,ninh-binh,,dates,2026-09-19,2026-09-20,sports,find_time,basic
+chieu nay chay bo o hue duoc khong,hue,,dates,2026-09-16,2026-09-16,sports,find_time,basic
+Mấy ngày tới đi bộ tập thể dục buổi sáng ở Vinh được không?,vinh,,dates,2026-09-17,2026-09-19,sports,find_time,basic
+Tháng mấy chạy giải ở Quy Nhơn là mát nhất?,quy-nhon,,best_time,,,sports,find_time,basic
+Bây giờ đá bóng ngoài trời có ổn không?,,,now,,,sports,find_time,basic
+Tháng 3 chạy trail ở Sa Pa có hợp không?,sa-pa,,months,2027-03-01,2027-03-31,sports,find_time,basic
+Sáng nay tập thể dục ngoài trời ở Hải Phòng có ổn không?,hai-phong,,dates,2026-09-16,2026-09-16,sports,find_time,basic
 Mai lên Tam Đảo săn mây được không?,tam-dao,,dates,2026-09-17,2026-09-17,photography,find_time,basic
 Chụp ảnh hoàng hôn ở Phú Quốc tháng nào đẹp nhất?,phu-quoc,,best_time,,,photography,find_time,basic
 Chiều nay chụp hình ngoài trời ở Hội An có bị mưa không?,hoi-an,,dates,2026-09-16,2026-09-16,photography,find_time,basic
@@ -87,16 +87,6 @@ Quay phim ngoài trời ở Sài Gòn tuần sau có mưa nhiều không?,ho-chi
 Lúc này chụp ảnh ngoài trời ở Hà Nội có đủ nắng không?,ha-noi,,now,,,photography,find_time,basic
 Chụp ảnh kỷ yếu ở Cần Thơ vào tháng sau có ổn không?,can-tho,,months,2026-10-01,2026-10-31,photography,find_time,basic
 Ngay bây giờ có nên đi chụp ảnh ngoài trời không?,,,now,,,photography,find_time,basic
-Tối nay ngồi cà phê ngoài trời ở Đà Lạt có lạnh không?,da-lat,,dates,2026-09-16,2026-09-16,coffee,find_time,basic
-Lúc này ngồi cafe vỉa hè ở Hà Nội được không?,ha-noi,,now,,,coffee,find_time,basic
-Chiều mai uống cà phê sân thượng ở Sài Gòn có mưa không?,ho-chi-minh,,dates,2026-09-17,2026-09-17,coffee,find_time,basic
-Cuối tuần này đi cafe ngoài trời ở Đà Nẵng có nóng không?,da-nang,,dates,2026-09-19,2026-09-20,coffee,find_time,basic
-ngoi quan cafe via he o hn luc nay co mua khong,ha-noi,,now,,,coffee,find_time,basic
-Tháng mấy ngồi cà phê ngắm phố ở Hội An dễ chịu nhất?,hoi-an,,best_time,,,coffee,find_time,basic
-Sáng mai ngồi uống trà đá vỉa hè ở Hải Phòng được không?,hai-phong,,dates,2026-09-17,2026-09-17,coffee,find_time,basic
-Hôm nay ra quán cà phê ven hồ ở Buôn Ma Thuột có mát không?,buon-ma-thuot,,dates,2026-09-16,2026-09-16,coffee,find_time,basic
-Bây giờ ngồi cà phê ngoài trời có bị nắng gắt không?,,,now,,,coffee,find_time,basic
-Tuần sau đi cafe ở Bảo Lộc có mưa không?,bao-loc,,dates,2026-09-21,2026-09-27,coffee,find_time,basic
 Cuối tuần này tắm biển ở Vũng Tàu được không?,vung-tau,,dates,2026-09-19,2026-09-20,beach,find_time,basic
 Tháng mấy tắm biển ở Nha Trang là đẹp nhất?,nha-trang,,best_time,,,beach,find_time,basic
 Tháng 12 đi biển Quy Nhơn có lạnh không?,quy-nhon,,months,2026-12-01,2026-12-31,beach,find_time,basic
@@ -119,20 +109,26 @@ Leo núi Bà Đen ở Tây Ninh vào tháng 1 có nóng không?,tay-ninh,,months
 Glamping ở Mộc Châu mùa đông có lạnh quá không?,moc-chau,,months,2026-11-01,2027-01-31,camping,find_time,basic
 Tháng sau đi cắm trại ven hồ ở Lâm Đồng được không?,lam-dong,,months,2026-10-01,2026-10-31,camping,find_time,basic
 Sáng mai đi dã ngoại ở Củ Chi có mưa không?,cu-chi,,dates,2026-09-17,2026-09-17,camping,find_time,basic
+Tháng mấy xây nhà ở Hà Nội ít mưa nhất?,ha-noi,,best_time,,,construction,find_time,basic
+Tuần sau đổ bê tông mái ở Đà Nẵng có mưa không?,da-nang,,dates,2026-09-21,2026-09-27,construction,find_time,basic
+Tháng 12 khởi công xây dựng ở Cần Thơ có hợp không?,can-tho,,months,2026-12-01,2026-12-31,construction,find_time,basic
+Ngày mai lợp mái nhà ở Nam Định được không?,nam-dinh,,dates,2026-09-17,2026-09-17,construction,find_time,basic
+Tháng sau thi công làm đường ở Thanh Hóa có bị mưa không?,thanh-hoa,,months,2026-10-01,2026-10-31,construction,find_time,basic
+Tháng mấy tổ chức hội chợ ở Hải Phòng ít mưa nhất?,hai-phong,,best_time,,,outdoor_event,find_time,basic
+Cuối tuần này khai trương cửa hàng ở Biên Hòa có mưa không?,bien-hoa,,dates,2026-09-19,2026-09-20,outdoor_event,find_time,basic
+Tháng 12 tổ chức lễ hội âm nhạc ở Đà Lạt có lạnh không?,da-lat,,months,2026-12-01,2026-12-31,outdoor_event,find_time,basic
+Tuần sau công ty đi team building ở Vũng Tàu được không?,vung-tau,,dates,2026-09-21,2026-09-27,outdoor_event,find_time,basic
 "Nhà mình định tổ chức hỷ sự ngoài trời ở Đà Nẵng vào tháng 12, có ổn không?",da-nang,,months,2026-12-01,2026-12-31,wedding,find_time,paraphrase
 "Con gái tôi lên xe hoa tháng sau ở Huế, trời có mưa không?",hue,,months,2026-10-01,2026-10-31,wedding,find_time,paraphrase
 Tổ chức hôn lễ ở Nha Trang tháng mấy là đẹp nhất?,nha-trang,,best_time,,,wedding,find_time,paraphrase
 Đãi tiệc báo hỷ ở Cần Thơ cuối tuần này có mưa không?,can-tho,,dates,2026-09-19,2026-09-20,wedding,find_time,paraphrase
-Sáng mai đi jogging quanh hồ ở Hà Nội được không?,ha-noi,,dates,2026-09-17,2026-09-17,running,find_time,paraphrase
-Chiều nay đánh tennis ở Sài Gòn có nóng quá không?,ho-chi-minh,,dates,2026-09-16,2026-09-16,running,find_time,paraphrase
-Tuần sau chơi pickleball ngoài trời ở Đà Nẵng có mưa không?,da-nang,,dates,2026-09-21,2026-09-27,running,find_time,paraphrase
-Hôm nay đá banh ở Cần Thơ được không?,can-tho,,dates,2026-09-16,2026-09-16,running,find_time,paraphrase
+Sáng mai đi jogging quanh hồ ở Hà Nội được không?,ha-noi,,dates,2026-09-17,2026-09-17,sports,find_time,paraphrase
+Chiều nay đánh tennis ở Sài Gòn có nóng quá không?,ho-chi-minh,,dates,2026-09-16,2026-09-16,sports,find_time,paraphrase
+Tuần sau chơi pickleball ngoài trời ở Đà Nẵng có mưa không?,da-nang,,dates,2026-09-21,2026-09-27,sports,find_time,paraphrase
+Hôm nay đá banh ở Cần Thơ được không?,can-tho,,dates,2026-09-16,2026-09-16,sports,find_time,paraphrase
 Chiều nay ra đồi chè ở Bảo Lộc chụp choẹt có đẹp không?,bao-loc,,dates,2026-09-16,2026-09-16,photography,find_time,paraphrase
 Tháng mấy ngắm mây ở Đà Lạt đẹp nhất?,da-lat,,best_time,,,photography,find_time,paraphrase
 Tuần sau đi pose hình ở Hội An có mưa không?,hoi-an,,dates,2026-09-21,2026-09-27,photography,find_time,paraphrase
-Tối nay ra quán cóc vỉa hè ở Hà Nội có lạnh không?,ha-noi,,dates,2026-09-16,2026-09-16,coffee,find_time,paraphrase
-Chiều mai hẹn bạn nhâm nhi ly bạc xỉu ngoài trời ở Sài Gòn có mưa không?,ho-chi-minh,,dates,2026-09-17,2026-09-17,coffee,find_time,paraphrase
-Lúc này ngồi ban công uống trà ở Đà Lạt có lạnh không?,da-lat,,now,,,coffee,find_time,paraphrase
 Cuối tuần này xuống Vũng Tàu nghịch nước được không?,vung-tau,,dates,2026-09-19,2026-09-20,beach,find_time,paraphrase
 Ngày mai chèo SUP ở Phú Quốc có sóng không?,phu-quoc,,dates,2026-09-17,2026-09-17,beach,find_time,paraphrase
 Hôm nay nhảy sóng ở Đà Nẵng có an toàn không?,da-nang,,dates,2026-09-16,2026-09-16,beach,find_time,paraphrase
@@ -152,7 +148,7 @@ Tháng 10 vi vu Côn Đảo có ổn không?,,Côn Đảo,months,2026-10-01,2026
 Tháng 12 đi biển ở đâu?,,,months,2026-12-01,2026-12-31,beach,find_place,place
 thang 11 di dau choi cho dep,,,months,2026-11-01,2026-11-30,travel,find_place,place
 Mùa đông nên đi cắm trại chỗ nào?,,,months,2026-11-01,2027-01-31,camping,find_place,place
-Tuần sau chạy bộ ở nơi nào mát nhất?,,,dates,2026-09-21,2026-09-27,running,find_place,place
+Tuần sau chạy bộ ở nơi nào mát nhất?,,,dates,2026-09-21,2026-09-27,sports,find_place,place
 Thành phố nào hợp tổ chức đám cưới vào tháng 1?,,,months,2027-01-01,2027-01-31,wedding,find_place,place
 Tháng sau về đâu chụp ảnh đẹp?,,,months,2026-10-01,2026-10-31,photography,find_place,place
 Cuối tuần này đi đâu tắm biển được?,,,dates,2026-09-19,2026-09-20,beach,find_place,place
@@ -161,7 +157,7 @@ Gợi ý vài điểm du lịch mát mẻ cho tháng 6,,,months,2027-06-01,2027-
 Tháng 1 muốn đi du lịch trốn rét thì nên bay về phương nào?,,,months,2027-01-01,2027-01-31,travel,find_place,place
 Đề xuất giúp mình nơi tắm biển đẹp trong tháng 5,,,months,2027-05-01,2027-05-31,beach,find_place,place
 "Tháng sau cả nhà muốn đi dã ngoại, có chỗ cắm trại lý tưởng không?",,,months,2026-10-01,2026-10-31,camping,find_place,place
-Liệt kê giúp tôi những thành phố hợp chạy marathon vào tháng 12,,,months,2026-12-01,2026-12-31,running,find_place,place
+Liệt kê giúp tôi những thành phố hợp chạy marathon vào tháng 12,,,months,2026-12-01,2026-12-31,sports,find_place,place
 "Tháng 4 được nghỉ dài, cả nhà nên đi chơi hướng nào?",,,months,2027-04-01,2027-04-30,travel,find_place,place
 Muốn chụp ảnh cưới ngoài trời tháng 3 thì chọn điểm chụp nào đẹp?,,,months,2027-03-01,2027-03-31,photography,find_place,place
 Tháng 11 nên đi biển ở tỉnh nào cho ấm?,,,months,2026-11-01,2026-11-30,beach,find_place,holdout
@@ -173,5 +169,5 @@ Tìm cho mình vài thành phố ít mưa trong tháng sau để đi chơi,,,mon
 Tháng 10 ra Cô Tô chơi có ổn không?,,Cô Tô,months,2026-10-01,2026-10-31,travel,find_time,holdout
 Cuối tuần sau lên Tam Cốc chụp hình có mưa không?,,Tam Cốc,dates,2026-09-26,2026-09-27,photography,find_time,holdout
 Tháng 3 đi phượt Hà Giang có lạnh không?,ha-giang,,months,2027-03-01,2027-03-31,travel,find_time,holdout
-Tuần sau chạy bộ quanh hồ Tây buổi sáng có oi không?,,hồ Tây,dates,2026-09-21,2026-09-27,running,find_time,holdout
+Tuần sau chạy bộ quanh hồ Tây buổi sáng có oi không?,,hồ Tây,dates,2026-09-21,2026-09-27,sports,find_time,holdout
 Hè này về Sầm Sơn tắm biển thì sao?,,Sầm Sơn,months,2027-05-01,2027-07-31,beach,find_time,holdout

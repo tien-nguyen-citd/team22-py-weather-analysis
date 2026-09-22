@@ -96,23 +96,32 @@ ngưỡng bảo đảm an toàn. Cấu hình tập trung tại
 | Mã | Hoạt động | Mưa / nhiệt độ | Khoảng nhiệt độ ưu tiên |
 | --- | --- | --- | --- |
 | `general` | Nhu cầu chung | 60% / 40% | 20–28°C |
-| `travel` | Du lịch | 60% / 40% | 20–28°C |
-| `wedding` | Đám cưới | 80% / 20% | 20–28°C |
-| `running` | Chạy bộ, thể thao ngoài trời | 40% / 60% | 16–24°C |
+| `travel` | Du lịch | 60% / 40% | 16–28°C |
+| `wedding` | Tổ chức đám cưới | 80% / 20% | 20–28°C |
+| `sports` | Thể thao ngoài trời | 80% / 20% | 16–30°C |
 | `photography` | Chụp ảnh ngoài trời | 90% / 10% | 18–30°C |
-| `coffee` | Cà phê ngoài trời | 60% / 40% | 20–28°C |
-| `beach` | Tắm biển | 60% / 40% | 25–31°C |
-| `camping` | Cắm trại, leo núi, dã ngoại | 80% / 20% | 18–26°C |
+| `beach` | Tắm biển | 60% / 40% | 28–34°C |
+| `camping` | Cắm trại, dã ngoại | 90% / 10% | 10–26°C |
+| `construction` | Thi công xây dựng | 80% / 20% | 15–30°C |
+| `outdoor_event` | Sự kiện ngoài trời | 70% / 30% | 20–28°C |
 
-Với mỗi ngày trong ứng viên lịch sử:
+Tab "Đi đâu?" không hiện `construction` vì thi công gắn với công trình có sẵn,
+không phải việc chọn nơi để đi.
 
-1. Điểm ít mưa bằng 100 nếu lượng mưa **dưới 10 mm**, bằng 0 nếu từ 10 mm trở lên.
-   Ngưỡng 10 mm theo chỉ số R10mm (ngày mưa lớn) do ETCCDI định nghĩa: mức mưa
-   đủ gây ảnh hưởng đáng kể tới kế hoạch ngoài trời, thay vì mọi cơn mưa phùn.
-2. Điểm nhiệt độ bằng 100 trong khoảng ưu tiên. Ngoài khoảng, trừ 10 điểm cho
-   mỗi °C cách biên gần nhất, tối thiểu bằng 0.
-3. Lấy trung bình từng thành phần trong mỗi năm, rồi trung bình đều 10 năm.
-4. Điểm tổng = điểm ít mưa × trọng số mưa + điểm nhiệt độ × trọng số nhiệt độ.
+Với mỗi ứng viên lịch sử:
+
+1. Một ngày là **ngày mưa** nếu lượng mưa từ 10 mm trở lên. Ngưỡng 10 mm theo chỉ
+   số R10mm (ngày mưa lớn) do ETCCDI định nghĩa: mức mưa đủ gây ảnh hưởng đáng kể
+   tới kế hoạch ngoài trời, thay vì mọi cơn mưa phùn.
+2. Tỷ lệ ngày mưa và điểm nhiệt độ theo ngày được lấy trung bình trong mỗi năm,
+   rồi trung bình đều 10 năm.
+3. Điểm ít mưa bằng 100 khi tỷ lệ ngày mưa **không quá 10%** (khoảng 3 ngày mỗi
+   tháng). Vượt mức này, trừ 2,5 điểm cho mỗi 1%, nên từ 50% ngày mưa trở lên
+   điểm ít mưa bằng 0. Mức phạt cao để tháng mùa mưa tụt điểm rõ rệt thay vì chỉ
+   giảm nhẹ.
+4. Điểm nhiệt độ của một ngày bằng 100 trong khoảng ưu tiên. Ngoài khoảng, trừ 10
+   điểm cho mỗi °C cách biên gần nhất, tối thiểu bằng 0.
+5. Điểm tổng = điểm ít mưa × trọng số mưa + điểm nhiệt độ × trọng số nhiệt độ.
 
 Điểm dùng thang cố định 0–100, không chuẩn hóa theo những ứng viên khác. Việc thêm
 một tháng vào danh sách không làm đổi điểm của tháng cũ. Khi đổi độ phân giải từ
@@ -122,15 +131,16 @@ tháng sang giai đoạn, tập ngày được phân tích thay đổi nên đi�
 
 Giả sử trong **mỗi năm** của 10 năm lịch sử, giai đoạn 1–10/1 có:
 
-- Năm ngày mưa 9,8 mm/ngày, năm ngày mưa 10 mm/ngày.
+- Bảy ngày mưa 9,8 mm/ngày, ba ngày mưa 10 mm/ngày.
 - Nhiệt độ trung bình của mọi ngày là 26°C.
 
 Với đám cưới:
 
-- Điểm ít mưa: `5 / 10 × 100 = 50`.
+- Tỷ lệ ngày mưa từ 10 mm: `3 / 10 = 30%`.
+- Điểm ít mưa: `100 − (30 − 10) × 2,5 = 50`.
 - Điểm nhiệt độ: `100`, vì 26°C nằm trong 20–28°C.
 - Điểm tổng: `50 × 0,8 + 100 × 0,2 = 60`.
-- Tỷ lệ ngày mưa từ 10 mm: `50%`; lượng mưa trung bình: `9,9 mm/ngày`.
+- Lượng mưa trung bình: `9,86 mm/ngày`.
 - Mẫu phân tích: 100 ngày thuộc 10 năm.
 
 Đây là dữ liệu minh họa được kiểm chứng bằng unit test, không phải thống kê thực
@@ -243,8 +253,8 @@ Một ứng viên trong response, **rút gọn từ ví dụ tính tay ở trên
     "resolution": "period"
   },
   "temperatureMean": 26.0,
-  "rainyDayPercentage": 50.0,
-  "precipitationMean": 0.9,
+  "rainyDayPercentage": 30.0,
+  "precipitationMean": 9.86,
   "rainScore": 50.0,
   "temperatureScore": 100.0,
   "rainContribution": 40.0,

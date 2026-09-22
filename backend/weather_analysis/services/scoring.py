@@ -248,16 +248,6 @@ def score_photography(hour: HourData) -> int:
     return int(clamp(js_round(score), 0, 99))
 
 
-def score_coffee(hour: HourData) -> int:
-    score = (
-        100
-        - abs(hour.temp - 26) * 3
-        - hour.rain_prob * 1.2
-        - (26 if hour.hour < 7 or hour.hour > 21 else 0)
-    )
-    return int(clamp(js_round(score), 0, 99))
-
-
 def calculate_activity_windows(
     hours: list[HourData],
     from_hour: int = 6,
@@ -269,12 +259,6 @@ def calculate_activity_windows(
             "Chụp ảnh ngoài trời",
             "Ánh sáng đẹp nhất quanh giờ vàng",
             score_photography,
-        ),
-        (
-            "coffee",
-            "Cà phê ngoài trời",
-            "Dễ chịu khi trời khô, không quá nóng",
-            score_coffee,
         ),
     ]
     activities: list[ActivityWindow] = []

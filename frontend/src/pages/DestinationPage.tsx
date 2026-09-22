@@ -8,6 +8,7 @@ import { ErrorMessage } from '../components/ErrorMessage';
 import {
   activityIcon,
   DEFAULT_DESTINATION_ACTIVITY,
+  destinationActivities,
   formatMonthChip,
   formatMonthTitle,
   upcomingMonths,
@@ -26,7 +27,7 @@ export function DestinationPage() {
     staleTime: 30 * 60 * 1000,
     retry: false,
   });
-  const choices = activities.data ?? [];
+  const choices = destinationActivities(activities.data ?? []);
   const selectedActivity = choices.find(activity => activity.id === activityId);
 
   return (

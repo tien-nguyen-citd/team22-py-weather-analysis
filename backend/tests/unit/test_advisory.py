@@ -12,6 +12,7 @@ from weather_analysis.advisory.models import (
     MonthRange,
 )
 from weather_analysis.advisory.scoring import (
+    rain_score,
     rank_candidates,
     score_candidates,
     temperature_score,
@@ -35,8 +36,8 @@ def test_default_request_and_activity_profiles() -> None:
     assert result.top_k == 3
     december = normalize_request(AdvisoryRequest("ha-noi"), date(2026, 12, 31))
     assert december.time == MonthRange("2027-01", "2027-12")
-    assert len(ACTIVITY_PROFILES) == 8
-    assert len({profile.id for profile in ACTIVITY_PROFILES}) == 8
+    assert len(ACTIVITY_PROFILES) == 9
+    assert len({profile.id for profile in ACTIVITY_PROFILES}) == 9
     assert all(
         profile.rain_weight + profile.temperature_weight == 1
         for profile in ACTIVITY_PROFILES
@@ -90,21 +91,29 @@ def test_temperature_score(temperature: float, expected: float) -> None:
     assert temperature_score(temperature, 20, 28) == expected
 
 
+@pytest.mark.parametrize(
+    ("rainy_day_percentage", "expected"),
+    [(0, 100), (5, 100), (10, 100), (20, 75), (30, 50), (50, 0), (80, 0)],
+)
+def test_rain_score(rainy_day_percentage: float, expected: float) -> None:
+    assert rain_score(rainy_day_percentage) == expected
+
+
 def test_hand_calculation_and_rain_threshold() -> None:
-    # Mỗi giai đoạn 10 ngày: 5 ngày dưới 10 mm và 5 ngày đúng 10 mm.
-    days = make_history(PERIOD, lambda day: (26.0, 9.8 if day.day <= 5 else 10.0))
+    # Mỗi giai đoạn 10 ngày: 7 ngày dưới 10 mm và 3 ngày đúng 10 mm.
+    days = make_history(PERIOD, lambda day: (26.0, 9.8 if day.day <= 7 else 10.0))
     request = normalize_request(
         AdvisoryRequest("ha-noi", MonthRange("2027-01", "2027-01"), "wedding"), TODAY
     )
     result = build_advice(request, days, PERIOD)
     candidate = result.candidates[0]
     assert candidate.rain_score == 50
-    assert candidate.rainy_day_percentage == 50
+    assert candidate.rainy_day_percentage == pytest.approx(30)
     assert candidate.temperature_score == 100
     assert candidate.rain_contribution == 40
     assert candidate.temperature_contribution == 20
     assert candidate.score == 60
-    assert candidate.precipitation_mean == pytest.approx(9.9)
+    assert candidate.precipitation_mean == pytest.approx(9.86)
     assert candidate.sample_years == 10
     assert candidate.sample_days == 100
     assert "50.0 × 80% = 40.0" in candidate.explanation
@@ -115,7 +124,7 @@ def test_hand_calculation_and_rain_threshold() -> None:
 def test_activity_changes_winner_and_candidate_set_does_not_change_score() -> None:
     def weather(day: date) -> tuple[float, float]:
         if day.month == 1:
-            return 22.0, 0.0 if day.day <= 15 else 20.0
+            return 22.0, 0.0 if day.day <= 24 else 20.0
         if day.month == 2:
             return 38.0, 0.0
         return 40.0, 20.0
@@ -150,9 +159,9 @@ def test_leap_day_is_excluded_and_years_are_equally_weighted() -> None:
     assert last.sample_days == 80
     assert last.temperature_mean == 25
     assert last.precipitation_mean == 10
-    assert last.rain_score == 50
+    assert last.rain_score == 0
     assert last.temperature_score == 90
-    assert last.score == 66
+    assert last.score == 36
 
 
 def test_ranking_ties_near_scores_and_unrounded_scores() -> None:
