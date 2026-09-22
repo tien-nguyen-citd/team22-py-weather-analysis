@@ -42,12 +42,19 @@ def load_intent_examples(path: Path = INTENT_EXAMPLES_PATH) -> list[IntentExampl
 
 
 class IntentKeywordMatcher:
-    """Tìm ý định theo từ khóa, lấy từ khóa xuất hiện đầu tiên trong câu."""
+    """Tìm ý định theo từ khóa.
+
+    Thứ tự các intent trong danh sách là thứ tự ưu tiên: khi câu có từ khóa của
+    nhiều intent, intent đứng trước thắng. Cùng một intent thì lấy từ khóa xuất
+    hiện đầu tiên trong câu.
+    """
 
     def __init__(self, intents: list[IntentDefinition]) -> None:
+        self._priority = {intent.id: index for index, intent in enumerate(intents)}
         self._matcher = PhraseMatcher(
             (keyword, intent.id) for intent in intents for keyword in intent.keywords
         )
 
     def find(self, text: str) -> PhraseMatch[Intent] | None:
-        return self._matcher.find_first(text)
+        matches = self._matcher.find_all(text)
+        return min(matches, key=lambda match: self._priority[match.value], default=None)

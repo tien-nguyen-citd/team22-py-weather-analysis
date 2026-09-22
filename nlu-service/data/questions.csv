@@ -178,3 +178,15 @@ Tháng 1 muốn đi du lịch trốn rét thì nên bay về phương nào?,,,mo
 Liệt kê giúp tôi những thành phố hợp chạy marathon vào tháng 12,,,months,2026-12-01,2026-12-31,running,find_place,place
 "Tháng 4 được nghỉ dài, cả nhà nên đi chơi hướng nào?",,,months,2027-04-01,2027-04-30,travel,find_place,place
 Muốn chụp ảnh cưới ngoài trời tháng 3 thì chọn điểm chụp nào đẹp?,,,months,2027-03-01,2027-03-31,photography,find_place,place
+Tháng 11 nên đi biển ở tỉnh nào cho ấm?,,,months,2026-11-01,2026-11-30,beach,find_place,holdout
+Cuối tuần này đi cắm trại ở đâu cho mát?,,,dates,2026-09-19,2026-09-20,camping,find_place,holdout
+Tháng 4 muốn tổ chức đám cưới ngoài trời thì chọn thành phố nào?,,,months,2027-04-01,2027-04-30,wedding,find_place,holdout
+"Tháng 12 muốn đưa bố mẹ đi nghỉ dưỡng, gợi ý giúp tôi vài điểm đến ấm áp",,,months,2026-12-01,2026-12-31,travel,find_place,holdout
+"Mùa đông này muốn đi trekking, có nơi lý tưởng nào không?",,,months,2026-11-01,2027-01-31,camping,find_place,holdout
+Tìm cho mình vài thành phố ít mưa trong tháng sau để đi chơi,,,months,2026-10-01,2026-10-31,travel,find_place,holdout
+Tháng 10 ra Cô Tô chơi có ổn không?,,Cô Tô,months,2026-10-01,2026-10-31,travel,find_time,holdout
+Cuối tuần sau lên Tam Cốc chụp hình có mưa không?,,Tam Cốc,dates,2026-09-26,2026-09-27,photography,find_time,holdout
+Tháng 3 đi phượt Hà Giang có lạnh không?,ha-giang,,months,2027-03-01,2027-03-31,travel,find_time,holdout
+Ngày mai ở Cần Thơ phơi lúa được không?,can-tho,,dates,2026-09-17,2026-09-17,drying,find_time,holdout
+Tuần sau chạy bộ quanh hồ Tây buổi sáng có oi không?,,hồ Tây,dates,2026-09-21,2026-09-27,running,find_time,holdout
+Hè này về Sầm Sơn tắm biển thì sao?,,Sầm Sơn,months,2027-05-01,2027-07-31,beach,find_time,holdout

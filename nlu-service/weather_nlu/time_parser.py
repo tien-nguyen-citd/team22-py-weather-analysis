@@ -50,6 +50,11 @@ MONTH_WORDS = {
 }
 # Mùa theo thói quen gọi ở miền Bắc: xuân 2-4, hè 5-7, thu 8-10, đông 11-1.
 SEASON_START_MONTHS = {"xuân": 2, "hè": 5, "hạ": 5, "thu": 8, "đông": 11}
+# Tết Nguyên Đán theo âm lịch luôn rơi vào khoảng tháng 1-2 dương lịch.
+LUNAR_NEW_YEAR_PHRASES = ["tết", "tết nguyên đán", "tết âm lịch", "tết ta"]
+NEW_YEAR_PHRASES = ["tết dương lịch", "tết tây"]
+# Trung thu (rằm tháng 8 âm lịch) rơi vào khoảng tháng 9-10 dương lịch.
+MID_AUTUMN_PHRASES = ["trung thu", "tết trung thu"]
 
 
 def last_day_of_month(year: int, month: int) -> date:
@@ -86,15 +91,18 @@ def month_of_year(month: int) -> TimeRule:
     return build
 
 
-def season(start_month: int) -> TimeRule:
-    """Chọn mùa đang diễn ra, hoặc mùa gần nhất sắp tới."""
+def season(start_month: int, month_count: int = SEASON_MONTHS) -> TimeRule:
+    """Chọn khoảng đang diễn ra, hoặc khoảng gần nhất sắp tới.
+
+    Dùng cho mùa và các dịp lặp lại hằng năm như Tết.
+    """
 
     def build(today: date) -> TimeSlot:
         for year in (today.year - 1, today.year, today.year + 1):
-            slot = months_slot(year, start_month, SEASON_MONTHS)
+            slot = months_slot(year, start_month, month_count)
             if slot.end is not None and slot.end >= today:
                 return slot
-        return months_slot(today.year + 1, start_month, SEASON_MONTHS)
+        return months_slot(today.year + 1, start_month, month_count)
 
     return build
 
@@ -183,10 +191,16 @@ def build_time_rules() -> list[tuple[str, TimeRule]]:
     for month, words in MONTH_WORDS.items():
         rules.append((f"tháng {month}", month_of_year(month)))
         rules += [(f"tháng {word}", month_of_year(month)) for word in words]
-    rules += [
-        (f"mùa {name}", season(start_month))
-        for name, start_month in SEASON_START_MONTHS.items()
-    ]
+    for name, start_month in SEASON_START_MONTHS.items():
+        # Không dùng "hè" đứng riêng vì dễ nhầm với "vỉa hè".
+        rules += [
+            (f"mùa {name}", season(start_month)),
+            (f"{name} này", season(start_month)),
+        ]
+    rules.append(("nghỉ hè", season(SEASON_START_MONTHS["hè"])))
+    rules += [(phrase, season(1, 2)) for phrase in LUNAR_NEW_YEAR_PHRASES]
+    rules += [(phrase, season(1, 1)) for phrase in NEW_YEAR_PHRASES]
+    rules += [(phrase, season(9, 2)) for phrase in MID_AUTUMN_PHRASES]
     return rules
 
 

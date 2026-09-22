@@ -1,15 +1,26 @@
 import unicodedata
+from collections import Counter
 from datetime import date
 from typing import Protocol
 
 import numpy as np
 
-from weather_nlu.activities import ActivityExample, ActivityKeywordMatcher
-from weather_nlu.encoder import normalize_rows
-from weather_nlu.intents import IntentExample, IntentKeywordMatcher
-from weather_nlu.locations import LocationMatcher
+from weather_nlu.activities import (
+    ActivityExample,
+    ActivityKeywordMatcher,
+    load_activities,
+    load_activity_examples,
+)
+from weather_nlu.encoder import MiniLmEncoder, normalize_rows
+from weather_nlu.intents import (
+    IntentExample,
+    IntentKeywordMatcher,
+    load_intent_examples,
+    load_intents,
+)
+from weather_nlu.locations import LocationMatcher, load_locations
 from weather_nlu.question_info import Intent, QuestionInfo, TimeKind, TimeSlot
-from weather_nlu.text import tokenize
+from weather_nlu.text import remove_diacritics, tokenize
 from weather_nlu.time_parser import parse_time
 
 
@@ -48,34 +59,56 @@ class QuestionVector:
         return vector
 
 
-class NearestExampleClassifier[T]:
-    """Gán cho câu hỏi nhãn của câu mẫu gần nghĩa nhất (1-NN theo cosine similarity)."""
+DEFAULT_NEIGHBOR_COUNT = 3
 
-    def __init__(self, encoder: TextEncoder, labels: list[T], texts: list[str]) -> None:
-        self._labels = labels
-        self._vectors = normalize_rows(encoder.encode(texts))
+
+class NearestExampleClassifier[T]:
+    """Gán nhãn cho câu hỏi theo k câu mẫu gần nghĩa nhất (k-NN theo cosine similarity).
+
+    k câu mẫu gần nhất bỏ phiếu cho nhãn của mình. Khi hòa phiếu, nhãn của câu mẫu
+    gần nhất thắng. Mỗi câu mẫu được thêm một bản không dấu để nhận ra câu hỏi
+    gõ không dấu.
+    """
+
+    def __init__(
+        self,
+        encoder: TextEncoder,
+        labels: list[T],
+        texts: list[str],
+        k: int = DEFAULT_NEIGHBOR_COUNT,
+    ) -> None:
+        self._labels = labels + labels
+        self._vectors = normalize_rows(
+            encoder.encode(texts + [remove_diacritics(text) for text in texts])
+        )
+        self._k = k
 
     def classify(self, question_vector: np.ndarray) -> T:
         similarities = self._vectors @ question_vector
-        return self._labels[int(np.argmax(similarities))]
+        nearest = np.argsort(-similarities)[: self._k]
+        labels = [self._labels[int(index)] for index in nearest]
+        votes = Counter(labels)
+        most_votes = max(votes.values())
+        return next(label for label in labels if votes[label] == most_votes)
 
 
-def remove_location(question: str, location_text: str | None) -> str:
-    """Bỏ tên địa điểm khỏi câu để embedding tập trung vào phần còn lại."""
-    if not location_text:
-        return question
-    return question.replace(unicodedata.normalize("NFC", location_text), " ")
+def remove_phrases(question: str, phrases: list[str]) -> str:
+    """Bỏ các cụm từ đã nhận ra để embedding tập trung vào phần còn lại của câu."""
+    for phrase in phrases:
+        question = question.replace(unicodedata.normalize("NFC", phrase), " ")
+    return question
 
 
 class RuleMiniLmExtractor:
     """Dùng từ khóa trước, rồi dùng MiniLM để nhận diện hoạt động và ý định.
 
     Địa điểm được tra theo từ điển và thời gian được đọc bằng các quy tắc tiếng Việt.
-    Tên địa điểm được bỏ khỏi câu hỏi trước khi so sánh embedding.
+    Tên địa điểm và các cụm từ khóa hoạt động được bỏ khỏi câu hỏi trước khi so sánh
+    embedding. Nhờ vậy MiniLM tập trung vào dạng câu hỏi thay vì chủ đề của câu.
 
     Ý định được xác định theo thứ tự: câu nêu địa điểm trong danh mục là tìm thời điểm,
     có từ khóa ý định thì theo từ khóa, hỏi thời điểm tốt nhất là tìm thời điểm,
-    còn lại lấy nhãn của câu mẫu gần nhất.
+    còn lại bỏ phiếu theo các câu mẫu gần nhất.
     """
 
     name = "rule+minilm"
@@ -134,12 +167,28 @@ class RuleMiniLmExtractor:
         question = unicodedata.normalize("NFC", question)
         location = self._locations.find(question)
         time = parse_time(question, today)
-        vector = QuestionVector(
-            self._encoder, remove_location(question, location.text if location else None)
-        )
+        # Hoạt động chỉ dùng embedding khi câu không có từ khóa hoạt động, còn ý định
+        # chỉ dùng khi câu không có địa điểm. Vì vậy bỏ cả hai loại cụm từ vẫn đúng
+        # cho cả hai việc và mỗi câu hỏi chỉ cần encode tối đa một lần.
+        known_phrases = [match.text for match in self._keywords.find_all(question)]
+        if location is not None:
+            known_phrases.append(location.text)
+        vector = QuestionVector(self._encoder, remove_phrases(question, known_phrases))
         return QuestionInfo(
             location_slug=location.value if location else None,
             time=time,
             activity_id=self.find_activity(question, vector),
             intent=self.find_intent(question, location is not None, time, vector),
         )
+
+
+def build_rule_minilm_extractor() -> RuleMiniLmExtractor:
+    """Tạo bộ đọc câu hỏi với MiniLM và dữ liệu trong thư mục data."""
+    return RuleMiniLmExtractor(
+        MiniLmEncoder(),
+        load_activity_examples(),
+        LocationMatcher(load_locations()),
+        ActivityKeywordMatcher(load_activities()),
+        IntentKeywordMatcher(load_intents()),
+        load_intent_examples(),
+    )

@@ -45,6 +45,15 @@ def months(start: date, end: date) -> TimeSlot:
         ("Mùa đông có lạnh không?", months(date(2026, 11, 1), date(2027, 1, 31))),
         ("Mùa hè có nóng không?", months(date(2027, 5, 1), date(2027, 7, 31))),
         ("Năm sau có nhiều bão không?", months(date(2027, 1, 1), date(2027, 12, 31))),
+        ("Hè này muốn trốn nóng ở đâu?", months(date(2027, 5, 1), date(2027, 7, 31))),
+        ("Nghỉ hè đi đâu cho mát?", months(date(2027, 5, 1), date(2027, 7, 31))),
+        ("Đông này có rét đậm không?", months(date(2026, 11, 1), date(2027, 1, 31))),
+        ("Tết đi đâu cho ấm?", months(date(2027, 1, 1), date(2027, 2, 28))),
+        ("tet nay di dau", months(date(2027, 1, 1), date(2027, 2, 28))),
+        ("Tết dương lịch có lạnh không?", months(date(2027, 1, 1), date(2027, 1, 31))),
+        ("Trung thu có mưa không?", months(date(2026, 9, 1), date(2026, 10, 31))),
+        ("Tết trung thu có mưa không?", months(date(2026, 9, 1), date(2026, 10, 31))),
+        ("Ngồi cafe vỉa hè có nóng không?", None),
         ("Tháng mấy thì đẹp nhất?", TimeSlot(TimeKind.BEST_TIME)),
         ("Khi nào nên đi?", TimeSlot(TimeKind.BEST_TIME)),
         (
@@ -73,4 +82,10 @@ def test_this_weekend_on_sunday_only_includes_today() -> None:
 def test_winter_in_january_is_current_winter() -> None:
     assert parse_time("Mùa đông có lạnh không?", date(2027, 1, 10)) == months(
         date(2026, 11, 1), date(2027, 1, 31)
+    )
+
+
+def test_lunar_new_year_in_february_is_current_one() -> None:
+    assert parse_time("Tết có lạnh không?", date(2027, 2, 10)) == months(
+        date(2027, 1, 1), date(2027, 2, 28)
     )

@@ -5,10 +5,11 @@ import numpy as np
 import pytest
 
 from weather_nlu.activities import ActivityExample, ActivityKeywordMatcher, load_activities
-from weather_nlu.extractor import RuleMiniLmExtractor
+from weather_nlu.extractor import NearestExampleClassifier, RuleMiniLmExtractor
 from weather_nlu.intents import IntentExample, IntentKeywordMatcher, load_intents
 from weather_nlu.locations import LocationMatcher, load_locations
 from weather_nlu.question_info import Intent
+from weather_nlu.text import remove_diacritics
 
 
 TODAY = date(2026, 9, 20)
@@ -25,8 +26,23 @@ class RecordingEncoder:
     def encode(self, texts: list[str]) -> np.ndarray:
         self.batches.append(texts)
         return np.array(
-            [PLACE_VECTOR if "gợi ý" in text.lower() else TIME_VECTOR for text in texts]
+            [
+                PLACE_VECTOR if "goi y" in remove_diacritics(text).lower() else TIME_VECTOR
+                for text in texts
+            ]
         )
+
+
+class LookupEncoder:
+    """Encoder giả trả vector cho sẵn, bản không dấu dùng chung vector với bản gốc."""
+
+    def __init__(self, vectors: dict[str, list[float]]) -> None:
+        self._vectors = vectors
+        self.texts: list[str] = []
+
+    def encode(self, texts: list[str]) -> np.ndarray:
+        self.texts += texts
+        return np.array([self._vectors[remove_diacritics(text)] for text in texts])
 
 
 @pytest.fixture
@@ -111,11 +127,11 @@ def test_best_time_question_finds_time(
 @pytest.mark.parametrize(
     ("question", "intent"),
     [
-        ("Gợi ý giúp mình điểm nghỉ mát cho tháng 7", Intent.FIND_PLACE),
+        ("Tư vấn giúp tôi mấy điểm du lịch, gợi ý cho tháng 12", Intent.FIND_PLACE),
         ("Tháng 7 trời có oi bức không?", Intent.FIND_TIME),
     ],
 )
-def test_other_questions_use_nearest_example(
+def test_other_questions_use_nearest_examples(
     extractor: RuleMiniLmExtractor, question: str, intent: Intent
 ) -> None:
     assert extractor.extract(question, TODAY).intent == intent
@@ -124,8 +140,64 @@ def test_other_questions_use_nearest_example(
 def test_question_is_encoded_once_for_activity_and_intent(
     extractor: RuleMiniLmExtractor, encoder: RecordingEncoder
 ) -> None:
-    result = extractor.extract("Gợi ý giúp mình điểm nghỉ mát cho tháng 7", TODAY)
+    result = extractor.extract("Gợi ý giúp mình vài nơi đẹp cho tháng 7", TODAY)
 
     assert result.activity_id is None
     assert result.intent == Intent.FIND_PLACE
-    assert encoded_after_setup(encoder) == [["Gợi ý giúp mình điểm nghỉ mát cho tháng 7"]]
+    assert encoded_after_setup(encoder) == [["Gợi ý giúp mình vài nơi đẹp cho tháng 7"]]
+
+
+def test_activity_phrases_are_removed_before_encoding(
+    extractor: RuleMiniLmExtractor, encoder: RecordingEncoder
+) -> None:
+    result = extractor.extract(
+        "Tháng 7 muốn đưa cả nhà đi nghỉ mát, gợi ý giúp mình vài nơi", TODAY
+    )
+
+    assert result.activity_id == "travel"
+    assert result.intent == Intent.FIND_PLACE
+    assert encoded_after_setup(encoder) == [
+        ["Tháng 7 muốn đưa cả nhà đi  , gợi ý giúp mình vài nơi"]
+    ]
+
+
+def test_all_activity_phrases_are_removed(
+    extractor: RuleMiniLmExtractor, encoder: RecordingEncoder
+) -> None:
+    extractor.extract("Gợi ý thành phố hợp chạy marathon tháng 12", TODAY)
+
+    [[encoded]] = encoded_after_setup(encoder)
+    assert "chạy" not in encoded
+    assert "marathon" not in encoded
+
+
+# Mỗi câu mẫu có thêm một bản không dấu nên được tính hai lần khi bỏ phiếu.
+NEIGHBOR_VECTORS = {
+    "a": [1.0, 0.0],
+    "b": [0.8, 0.6],
+    "c": [0.6, 0.8],
+}
+
+
+def test_majority_of_neighbors_beats_nearest_example() -> None:
+    classifier = NearestExampleClassifier(
+        LookupEncoder(NEIGHBOR_VECTORS), ["x", "y", "y"], ["a", "b", "c"], k=6
+    )
+
+    assert classifier.classify(np.array([1.0, 0.0])) == "y"
+
+
+def test_tied_vote_uses_nearest_example() -> None:
+    classifier = NearestExampleClassifier(
+        LookupEncoder(NEIGHBOR_VECTORS), ["x", "y", "y"], ["a", "b", "c"], k=4
+    )
+
+    assert classifier.classify(np.array([1.0, 0.0])) == "x"
+
+
+def test_examples_are_also_encoded_without_diacritics() -> None:
+    encoder = LookupEncoder({"Da Lat": [1.0, 0.0]})
+
+    NearestExampleClassifier(encoder, ["travel"], ["Đà Lạt"])
+
+    assert encoder.texts == ["Đà Lạt", "Da Lat"]

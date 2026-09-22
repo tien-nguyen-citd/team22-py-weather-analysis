@@ -61,3 +61,6 @@ class ActivityKeywordMatcher:
 
     def find(self, text: str) -> PhraseMatch[str] | None:
         return self._matcher.find_first(text)
+
+    def find_all(self, text: str) -> list[PhraseMatch[str]]:
+        return self._matcher.find_all(text)
