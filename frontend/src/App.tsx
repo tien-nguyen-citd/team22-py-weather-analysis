@@ -26,11 +26,10 @@ export const App: React.FC = () => {
 
           {/* Main Weather Analysis App Routes */}
           <Route path="/" element={<NangMuaApp />} />
-          <Route path="/:locationSlug" element={<NangMuaApp />} />
-          <Route path="/:locationSlug/:page" element={<NangMuaApp />} />
+          <Route path="/:page" element={<NangMuaApp />} />
 
           {/* Catch-all fallback */}
-          <Route path="*" element={<Navigate to="/ha-noi/tong-quan" replace />} />
+          <Route path="*" element={<Navigate to="/" replace />} />
         </Routes>
       </BrowserRouter>
     </QueryClientProvider>

@@ -4,7 +4,7 @@ from playwright.sync_api import Page
 class LocationBar:
     """Thanh tìm kiếm và chọn địa điểm."""
 
-    PATH = "/ha-noi/tong-quan"
+    PATH = "/"
 
     def __init__(self, page: Page) -> None:
         self.page = page
@@ -14,7 +14,7 @@ class LocationBar:
         ).get_by_role("option")
 
     def open(self) -> None:
-        """Mở trang tổng quan tại một địa điểm cố định."""
+        """Mở trang tổng quan."""
         self.page.goto(self.PATH)
 
     def search(self, query: str) -> None:

@@ -1,9 +1,10 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import {
   useParams,
   useNavigate,
   useLocation,
   Link,
+  Navigate,
 } from 'react-router-dom';
 import { skipToken, useQuery } from '@tanstack/react-query';
 import { Header, type PageTab } from './components/Header';
@@ -22,30 +23,29 @@ import {
 import { getForecast } from './api/forecast';
 import { useLocations } from './hooks/useLocations';
 import { useUserLocation } from './hooks/useUserLocation';
+import { isPageTab, pagePath, readViewedLocationSlug, type ViewedLocationState } from './lib/routes';
 import type { LocationItem } from './types';
 
 const FAVORITES_STORAGE_KEY = 'nang_mua_favorites';
 const EMPTY_LOCATIONS: LocationItem[] = [];
 
 export const NangMuaApp: React.FC = () => {
-  const { locationSlug, page } = useParams<{ locationSlug?: string; page?: string }>();
+  const { page } = useParams<{ page?: string }>();
   const navigate = useNavigate();
   const routerLocation = useLocation();
   const locationsQuery = useLocations();
   const locations = locationsQuery.data ?? EMPTY_LOCATIONS;
 
-  // Selected location from URL or fallback
-  const currentLocation = findLocationBySlug(
-    locations,
-    locationSlug || DEFAULT_LOCATION_SLUG,
-  );
-  const userLocationState = useUserLocation(locations, currentLocation);
+  const defaultLocation = findLocationBySlug(locations, DEFAULT_LOCATION_SLUG);
+  const userLocationState = useUserLocation(locations, defaultLocation);
 
-  // Selected tab
-  const validPages: PageTab[] = ['tong-quan', 'so-sanh', 'lich-su', 'tu-van', 'di-dau'];
-  const currentPage: PageTab = validPages.includes(page as PageTab)
-    ? (page as PageTab)
-    : 'tong-quan';
+  // Địa điểm đang xem: lấy từ history state, nếu không có thì dùng vị trí người dùng.
+  const viewedSlug = readViewedLocationSlug(routerLocation.state)
+    ?? userLocationState.userLocation?.slug
+    ?? DEFAULT_LOCATION_SLUG;
+  const currentLocation = findLocationBySlug(locations, viewedSlug);
+
+  const currentPage: PageTab = isPageTab(page) ? page : 'tong-quan';
   const usesClimateAdvice = currentPage === 'tu-van' || currentPage === 'di-dau';
 
   // Favorites from localStorage
@@ -73,23 +73,6 @@ export const NangMuaApp: React.FC = () => {
     });
   };
 
-  // Đường dẫn gốc mở địa điểm người dùng sau khi đã đọc lưu trữ hoặc định vị.
-  useEffect(() => {
-    if (
-      userLocationState.isInitialized &&
-      userLocationState.userLocation &&
-      (routerLocation.pathname === '/' || !locationSlug)
-    ) {
-      navigate(`/${userLocationState.userLocation.slug}/tong-quan`, { replace: true });
-    }
-  }, [
-    locationSlug,
-    navigate,
-    routerLocation.pathname,
-    userLocationState.isInitialized,
-    userLocationState.userLocation,
-  ]);
-
   // TanStack Query for weather data (cached 30 minutes)
   const {
     data: weatherData,
@@ -106,14 +89,18 @@ export const NangMuaApp: React.FC = () => {
   });
 
   const handleSelectLocation = (loc: LocationItem) => {
-    navigate(`/${loc.slug}/${currentPage}`);
+    const state: ViewedLocationState = { locationSlug: loc.slug };
+    navigate(pagePath(currentPage), { state });
   };
 
+  // Chuyển trang vẫn giữ địa điểm đang xem.
   const handleSelectPage = (nextPage: PageTab) => {
-    if (currentLocation) {
-      navigate(`/${currentLocation.slug}/${nextPage}`);
-    }
+    navigate(pagePath(nextPage), { state: routerLocation.state });
   };
+
+  if (page !== undefined && !isPageTab(page)) {
+    return <Navigate to="/" replace />;
+  }
 
   if (locationsQuery.isPending) {
     return (

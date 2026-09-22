@@ -30,10 +30,11 @@ Kết quả đọc câu hỏi có trường `intent` để giao diện chọn AP
   điểm phù hợp tại một địa điểm như mô tả bên dưới. Giá trị `intent` lạ cũng đi
   theo luồng này.
 
-Vị trí người dùng là thiết lập chung, độc lập với địa điểm thời tiết đang xem trên
-URL. Giao diện lưu slug địa điểm trong trình duyệt và cho tìm kiếm hoặc định vị lại
+Vị trí người dùng là thiết lập chung, độc lập với địa điểm thời tiết đang xem. URL
+chỉ chứa tên trang; địa điểm đang xem nằm trong history state, không có thì dùng vị
+trí người dùng. Giao diện lưu slug địa điểm trong trình duyệt và cho tìm kiếm hoặc định vị lại
 ở góc phải header. Lần đầu chưa có thiết lập, trình duyệt dùng GPS để chọn địa điểm
-gần nhất trong danh mục; nếu không định vị được thì dùng địa điểm đang xem. Tọa độ
+gần nhất trong danh mục; nếu không định vị được thì dùng Hà Nội. Tọa độ
 GPS thô không được lưu hoặc gửi tới backend và NLU.
 
 Kết quả thời gian từ dịch vụ được quy về khoảng tháng như sau:
@@ -183,7 +184,7 @@ API. Các hàm tạo ứng viên, tính điểm, xếp hạng và diễn giải 
 ## Demo trên web
 
 Sau khi chạy backend và frontend theo README, mở
-`http://localhost:5173/ha-noi/tu-van` hoặc chọn tab **Tư vấn** trong ứng dụng.
+`http://localhost:5173/tu-van` hoặc chọn tab **Tư vấn** trong ứng dụng.
 
 1. Chọn vị trí người dùng ở header hoặc nêu địa điểm trong câu hỏi. Khi dùng form,
    chọn địa điểm, hoạt động và khoảng tháng.

@@ -15,6 +15,7 @@ import type { ActivityProfile } from '../api/advisory';
 import { getDestinationRanking, type DestinationResult } from '../api/destinations';
 import { formatAdvisoryDate as dateLabel, formatAdvisoryNumber as number } from '../lib/advisory';
 import { formatMonthTitle } from '../lib/destinations';
+import { pagePath, type ViewedLocationState } from '../lib/routes';
 import { getFactorColor } from '../lib/scoring';
 import { CandidateEvidence } from './AdvisoryResults';
 import { ErrorMessage } from './ErrorMessage';
@@ -49,8 +50,9 @@ function ScoreRing({ score }: { score: number }) {
 }
 
 function WeatherLink({ slug, primary }: { slug: string; primary: boolean }) {
+  const state: ViewedLocationState = { locationSlug: slug };
   return (
-    <Link to={`/${slug}/tong-quan`}
+    <Link to={pagePath('tong-quan')} state={state}
       className={`focus-ring inline-flex items-center gap-1 rounded-xl px-3 py-2 text-sm font-semibold transition-colors ${
         primary ? 'bg-white text-acc hover:bg-white/90' : 'bg-acc-soft text-acc hover:bg-acc hover:text-acc-ink'}`}>
       Xem thời tiết hiện tại <ArrowUpRight size={16} aria-hidden="true" />

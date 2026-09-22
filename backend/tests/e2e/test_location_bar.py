@@ -24,7 +24,7 @@ def test_search_by_abbreviation_shows_full_name(page: Page) -> None:
 
 
 def test_compare_page_does_not_show_location_bar(page: Page) -> None:
-    page.goto("/ha-noi/so-sanh")
+    page.goto("/so-sanh")
 
     expect(page.get_by_placeholder("Tìm tỉnh, thành phố…")).to_have_count(0)
     expect(
