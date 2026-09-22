@@ -100,10 +100,14 @@ ngưỡng bảo đảm an toàn. Cấu hình tập trung tại
 | `wedding` | Tổ chức đám cưới | 80% / 20% | 20–28°C |
 | `sports` | Thể thao ngoài trời | 80% / 20% | 16–30°C |
 | `photography` | Chụp ảnh ngoài trời | 90% / 10% | 18–30°C |
-| `beach` | Tắm biển | 60% / 40% | 28–34°C |
+| `beach` | Tắm biển | 30% / 70% | 28–34°C |
 | `camping` | Cắm trại, dã ngoại | 90% / 10% | 10–26°C |
 | `construction` | Thi công xây dựng | 80% / 20% | 15–30°C |
 | `outdoor_event` | Sự kiện ngoài trời | 70% / 30% | 20–28°C |
+
+Tắm biển đặt nặng nhiệt độ vì trời lạnh thì không xuống biển được dù khô ráo. Ví
+dụ tháng 12, biển miền Bắc ít mưa nhưng nhiệt độ trung bình khoảng 19°C nên bị điểm
+thấp, xếp sau các bãi biển phía Nam.
 
 Tab "Đi đâu?" không hiện `construction` vì thi công gắn với công trình có sẵn,
 không phải việc chọn nơi để đi.

@@ -51,8 +51,9 @@ ACTIVITY_PROFILES = (
     ActivityProfile(
         "beach",
         "Tắm biển",
-        0.6,
-        0.4,
+        # Trời lạnh thì không tắm biển được dù khô ráo, nên nhiệt độ nặng hơn mưa.
+        0.3,
+        0.7,
         28,
         34,
         "Ưu tiên ít mưa và nhiệt độ trung bình ngày 28–34°C; chưa đánh giá sóng, gió.",

@@ -2,9 +2,9 @@ import { useState, type FormEvent } from 'react';
 import { Bot, FileText, MessageCircle, Send, TriangleAlert } from 'lucide-react';
 
 const SAMPLE_QUESTIONS = [
-  'Mùa này đi Phú Quốc có hợp không?',
-  'Đám cưới tháng mấy thì đẹp nhất?',
-  'Sang năm cắm trại ở Đà Lạt vào tháng nào thì ít mưa?',
+  'Mùa nào xây nhà được?',
+  'Tháng nào đi Đà Lạt chơi được?',
+  'Tháng 12 này tắm biển ở đâu?',
 ];
 
 interface AdvisoryChatBoxProps {

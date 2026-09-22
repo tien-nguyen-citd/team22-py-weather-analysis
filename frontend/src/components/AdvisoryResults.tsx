@@ -78,6 +78,9 @@ export function AdvisoryResults({ advice, locationName, onExploreMonth }: Adviso
   const best = advice.recommendations[0];
   const [selectedDate, setSelectedDate] = useState(best?.window.startDate);
   const selected = advice.candidates.find(item => item.window.startDate === selectedDate) ?? best;
+  // Biểu đồ luôn đi theo thời gian: thời điểm gần nhất nằm bên trái.
+  const chronologicalCandidates = [...advice.candidates]
+    .sort((a, b) => a.window.startDate.localeCompare(b.window.startDate));
 
   if (!best || !selected) return <p role="status">Chưa có thời điểm để đề xuất trong khoảng đã chọn.</p>;
 
@@ -105,7 +108,7 @@ export function AdvisoryResults({ advice, locationName, onExploreMonth }: Adviso
         <p className="mt-1 text-sm text-m1">Điểm càng cao càng phù hợp với tiêu chí. Chọn một cột để xem số liệu; có thể dùng phím Tab và Enter.</p>
         <div className="mt-5 overflow-x-auto pb-3">
           <div className="flex min-w-max gap-2">
-            {advice.candidates.map(candidate => {
+            {chronologicalCandidates.map(candidate => {
               const active = candidate.window.startDate === selected.window.startDate;
               return (
                 <button key={candidate.window.startDate} type="button" aria-pressed={active}

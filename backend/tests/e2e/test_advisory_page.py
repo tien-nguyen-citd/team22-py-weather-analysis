@@ -10,7 +10,7 @@ from tests.e2e.advisory_fixtures import (  # noqa: F401
 )
 
 
-SAMPLE_TRAVEL = "Mùa này đi Phú Quốc có hợp không?"
+SAMPLE_TRAVEL = "Tháng nào đi Đà Lạt chơi được?"
 FREE_QUESTION = "Đám cưới tháng mấy thì đẹp nhất?"
 PLACE_QUESTION = "Tháng 12 đi biển ở đâu?"
 
@@ -25,7 +25,7 @@ def nlu_requests(page: Page) -> list[dict[str, Any]]:
         if payload["question"] == SAMPLE_TRAVEL:
             route.fulfill(
                 json={
-                    "locationSlug": "phu-quoc",
+                    "locationSlug": "da-lat",
                     "locationFromQuestion": True,
                     "activityId": "travel",
                     "time": {
@@ -97,14 +97,14 @@ def test_sample_question_gives_advice_and_shows_what_was_understood(
     assert nlu_requests[-1]["currentLocationSlug"] == "ha-noi"
     assert len(nlu_requests[-1]["today"]) == 10
     assert advisory_requests[-1] == {
-        "locationSlug": "phu-quoc",
+        "locationSlug": "da-lat",
         "activityId": "travel",
         "time": {"startMonth": "2026-09", "endMonth": "2026-11"},
         "topK": 2,
     }
 
     understood = page.get_by_text("Hiểu là", exact=True).locator("..")
-    expect(understood).to_contain_text("Phú Quốc")
+    expect(understood).to_contain_text("Đà Lạt")
     expect(understood).to_contain_text("Du lịch")
 
 
@@ -278,7 +278,7 @@ def test_edit_opens_the_form_with_the_values_just_used(
     page.get_by_role("button", name="Sửa", exact=True).click()
     form = page.get_by_role("region", name="Điền tiêu chí tư vấn")
     expect(form).to_be_visible()
-    expect(form.get_by_label("Địa điểm", exact=True)).to_have_value("phu-quoc")
+    expect(form.get_by_label("Địa điểm", exact=True)).to_have_value("da-lat")
     expect(form.get_by_label("Hoạt động", exact=True)).to_have_value("travel")
 
     form.get_by_role("button", name="Quay lại hỏi bằng câu", exact=True).click()
