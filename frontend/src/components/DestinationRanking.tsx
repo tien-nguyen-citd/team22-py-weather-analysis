@@ -67,7 +67,7 @@ function PodiumCard({ result, activity, primary }: {
   const statClass = `rounded-2xl p-3 ${primary ? 'bg-white/10' : 'bg-tint'}`;
   return (
     <article aria-label={`Hạng ${candidate.rank}: ${location.name}, ${number(candidate.score)} điểm`}
-      className={`min-w-0 rounded-[24px] shadow-sh2 ${primary ? 'bg-acc p-6 text-acc-ink sm:p-7' : 'bg-card p-5 text-ink sm:p-6'}`}>
+      className={`flex h-full min-w-0 flex-col rounded-[24px] p-6 shadow-sh2 sm:p-7 ${primary ? 'bg-acc text-acc-ink' : 'bg-card text-ink'}`}>
       <div className="flex items-start justify-between gap-4">
         <div className="min-w-0">
           <p className={`inline-flex items-center gap-2 text-sm font-semibold ${primary ? '' : 'text-acc'}`}>
@@ -76,21 +76,19 @@ function PodiumCard({ result, activity, primary }: {
               : <span className="flex h-6 w-6 items-center justify-center rounded-full bg-acc-soft text-xs font-bold">{candidate.rank}</span>}
             {primary ? 'Hợp nhất tháng này' : `Hạng ${candidate.rank}`}
           </p>
-          <h3 className={`mt-3 font-nunito font-bold leading-tight ${primary ? 'text-3xl sm:text-4xl' : 'text-xl'}`}>{location.name}</h3>
+          <h3 className="mt-3 font-nunito text-3xl font-bold leading-tight">{location.name}</h3>
           <p className={`mt-1 text-sm ${primary ? 'opacity-85' : 'text-m1'}`}>{location.regionLabel}</p>
         </div>
-        {primary
-          ? <ScoreRing score={candidate.score} />
-          : <p className="shrink-0 text-right font-nunito text-2xl font-bold text-acc">{number(candidate.score)}<span className="text-xs font-normal text-m2"> /100</span></p>}
+        <div className={primary ? '' : 'text-acc'}><ScoreRing score={candidate.score} /></div>
       </div>
-      <dl className={`grid grid-cols-2 gap-3 ${primary ? 'mt-6' : 'mt-4'}`}>
+      <dl className="mt-6 grid grid-cols-2 gap-3">
         <div className={statClass}>
           <dt className="flex items-center gap-1 text-xs"><Thermometer size={14} aria-hidden="true" />Nhiệt độ TB ngày</dt>
-          <dd className={`mt-1 font-nunito font-bold ${primary ? 'text-2xl' : 'text-xl'}`}>{number(candidate.temperatureMean)}°C</dd>
+          <dd className="mt-1 font-nunito text-2xl font-bold">{number(candidate.temperatureMean)}°C</dd>
         </div>
         <div className={statClass}>
           <dt className="flex items-center gap-1 text-xs"><CloudRain size={14} aria-hidden="true" />Ngày mưa ≥ {number(activity.rainThresholdMm)} mm</dt>
-          <dd className={`mt-1 font-nunito font-bold ${primary ? 'text-2xl' : 'text-xl'}`}>{number(candidate.rainyDayPercentage)}%</dd>
+          <dd className="mt-1 font-nunito text-2xl font-bold">{number(candidate.rainyDayPercentage)}%</dd>
         </div>
       </dl>
       <details className="group mt-4 border-t border-current/20 pt-3">
@@ -100,14 +98,14 @@ function PodiumCard({ result, activity, primary }: {
         </summary>
         <div className="mt-3"><CandidateEvidence candidate={candidate} activity={activity} /></div>
       </details>
-      <div className="mt-4"><WeatherLink slug={location.slug} primary={primary} /></div>
+      <div className="mt-auto pt-4"><WeatherLink slug={location.slug} primary={primary} /></div>
     </article>
   );
 }
 
 function RankingRow({ result, activity }: { result: DestinationResult; activity: ActivityProfile }) {
   const { location, candidate } = result;
-  const onPodium = candidate.rank <= 3;
+  const onPodium = candidate.rank <= 2;
   return (
     <li className="border-t border-track first:border-t-0">
       <details className="group">
@@ -144,12 +142,9 @@ function RankingSkeleton() {
   return (
     <div className="space-y-5 animate-pulse motion-reduce:animate-none" aria-hidden="true">
       <div className="h-12 rounded-2xl bg-acc-soft" />
-      <div className="grid gap-4 lg:grid-cols-[1.35fr_1fr]">
+      <div className="grid gap-4 sm:grid-cols-2">
         <div className="h-[300px] rounded-[24px] bg-acc/60" />
-        <div className="grid gap-4">
-          <div className="h-[142px] rounded-[24px] bg-card shadow-sh2" />
-          <div className="h-[142px] rounded-[24px] bg-card shadow-sh2" />
-        </div>
+        <div className="h-[300px] rounded-[24px] bg-card shadow-sh2" />
       </div>
       <div className="h-[420px] rounded-[24px] bg-card shadow-sh2" />
     </div>
@@ -193,7 +188,8 @@ export function DestinationRanking({ month, activityId }: DestinationRankingProp
   }
 
   const { activity, destinations } = ranking.data;
-  const [best, ...runnersUp] = destinations.slice(0, 3);
+  const podium = destinations.slice(0, 2);
+  const best = podium[0];
   const isUpdating = ranking.isPlaceholderData;
 
   if (!best) return <p role="status" className="text-sm text-m1">Chưa có điểm đến phù hợp cho lựa chọn này.</p>;
@@ -217,15 +213,10 @@ export function DestinationRanking({ month, activityId }: DestinationRankingProp
         <span>{ranking.data.summary}</span>
       </p>
 
-      <div className="grid items-start gap-4 lg:grid-cols-[1.35fr_1fr]">
-        <PodiumCard result={best} activity={activity} primary />
-        {runnersUp.length > 0 && (
-          <div className="grid gap-4">
-            {runnersUp.map(result => (
-              <PodiumCard key={result.location.slug} result={result} activity={activity} primary={false} />
-            ))}
-          </div>
-        )}
+      <div className="grid gap-4 sm:grid-cols-2">
+        {podium.map(result => (
+          <PodiumCard key={result.location.slug} result={result} activity={activity} primary={result === best} />
+        ))}
       </div>
 
       <section aria-label="Bảng xếp hạng đầy đủ" className="min-w-0 rounded-[24px] bg-card p-4 shadow-sh2 sm:p-6">
@@ -250,7 +241,7 @@ export function DestinationRanking({ month, activityId }: DestinationRankingProp
         </ol>
       </section>
 
-      <details className="rounded-2xl border border-border p-4 text-sm text-m1">
+      <details open className="rounded-2xl border border-border p-4 text-sm text-m1">
         <summary className="focus-ring cursor-pointer rounded font-semibold text-ink2">Hiểu đúng kết quả</summary>
         <ul className="mt-3 list-disc space-y-2 pl-5">{ranking.data.notes.map(note => <li key={note}>{note}</li>)}</ul>
       </details>

@@ -38,14 +38,16 @@ function CandidateCard({ candidate, activity, primary, onExploreMonth }: {
 }) {
   return (
     <article aria-label={`${primary ? 'Đề xuất chính' : 'Lựa chọn thay thế'}: ${candidate.window.label}`}
-      className={`min-w-0 rounded-[24px] p-6 sm:p-7 shadow-sh2 ${primary ? 'bg-acc text-acc-ink' : 'bg-card text-ink'}`}>
+      className={`flex h-full min-w-0 flex-col rounded-[24px] p-6 sm:p-7 shadow-sh2 ${primary ? 'bg-acc text-acc-ink' : 'bg-card text-ink'}`}>
       <div className="flex items-center justify-between gap-3 text-sm font-semibold">
         <span className="inline-flex items-center gap-2">{primary ? <Trophy size={17} aria-hidden="true" /> : <CalendarDays size={17} aria-hidden="true" />}{primary ? 'Đề xuất chính' : 'Lựa chọn thay thế'}</span>
         <span>{number(candidate.score)}<span className="font-normal"> / 100 điểm</span></span>
       </div>
-      <h3 className={`mt-4 font-nunito font-bold ${primary ? 'text-3xl' : 'text-xl'}`}>{candidate.window.label}</h3>
-      <p className="mt-1 text-sm">{dateLabel(candidate.window.startDate)} – {dateLabel(candidate.window.endDate)}</p>
-      {candidate.similarToBest && <p className="mt-3 text-xs font-semibold">Mức phù hợp gần tương đương đề xuất chính</p>}
+      <h3 className="mt-4 font-nunito text-3xl font-bold">{candidate.window.label}</h3>
+      <p className="mt-1 text-sm">
+        {dateLabel(candidate.window.startDate)} – {dateLabel(candidate.window.endDate)}
+        {candidate.similarToBest && <span className="font-semibold"> · Gần tương đương đề xuất chính</span>}
+      </p>
       <dl className="mt-5 grid grid-cols-2 gap-3">
         <div className={`rounded-2xl p-3 ${primary ? 'bg-white/10' : 'bg-tint'}`}>
           <dt className="flex items-center gap-1 text-xs"><Thermometer size={14} aria-hidden="true" />Nhiệt độ TB ngày</dt>
@@ -61,10 +63,12 @@ function CandidateCard({ candidate, activity, primary, onExploreMonth }: {
         <div className="mt-3"><CandidateEvidence candidate={candidate} activity={activity} /></div>
       </details>
       {candidate.window.resolution === 'month' && (
-        <button type="button" onClick={() => onExploreMonth(candidate.window.startDate.slice(0, 7))}
-          className={`focus-ring mt-4 inline-flex items-center gap-2 rounded-xl px-3 py-2 text-sm font-semibold ${primary ? 'bg-white text-acc' : 'bg-acc-soft text-acc'}`}>
-          Xem giai đoạn trong tháng này <ArrowDownRight size={16} aria-hidden="true" />
-        </button>
+        <div className="mt-auto pt-4">
+          <button type="button" onClick={() => onExploreMonth(candidate.window.startDate.slice(0, 7))}
+            className={`focus-ring inline-flex items-center gap-2 rounded-xl px-3 py-2 text-sm font-semibold ${primary ? 'bg-white text-acc' : 'bg-acc-soft text-acc'}`}>
+            Xem giai đoạn trong tháng này <ArrowDownRight size={16} aria-hidden="true" />
+          </button>
+        </div>
       )}
     </article>
   );
@@ -90,13 +94,11 @@ export function AdvisoryResults({ advice, locationName, onExploreMonth }: Adviso
         {advice.summary}
       </p>
       <p className="text-sm text-m1">Tham khảo từ lịch sử khí hậu, không phải dự báo cho ngày cụ thể.</p>
-      <div className="grid items-start gap-4 lg:grid-cols-[1.25fr_1fr]">
-        <CandidateCard candidate={best} activity={advice.activity} primary onExploreMonth={onExploreMonth} />
-        <div className="grid gap-4">
-          {advice.recommendations.slice(1).map(candidate => (
-            <CandidateCard key={candidate.window.startDate} candidate={candidate} activity={advice.activity} primary={false} onExploreMonth={onExploreMonth} />
-          ))}
-        </div>
+      <div className="grid gap-4 sm:grid-cols-2">
+        {advice.recommendations.slice(0, 2).map(candidate => (
+          <CandidateCard key={candidate.window.startDate} candidate={candidate} activity={advice.activity}
+            primary={candidate === best} onExploreMonth={onExploreMonth} />
+        ))}
       </div>
       <section aria-label="So sánh các thời điểm" className="min-w-0 rounded-[24px] bg-card p-5 shadow-sh2 sm:p-7">
         <h3 className="font-nunito text-xl font-bold">Cả khoảng thời gian, trong một cái nhìn</h3>
@@ -125,7 +127,7 @@ export function AdvisoryResults({ advice, locationName, onExploreMonth }: Adviso
           <CandidateEvidence candidate={selected} activity={advice.activity} />
         </div>
       </section>
-      <details className="rounded-2xl border border-border p-4 text-sm text-m1">
+      <details open className="rounded-2xl border border-border p-4 text-sm text-m1">
         <summary className="focus-ring cursor-pointer rounded font-semibold text-ink2">Hiểu đúng kết quả</summary>
         <ul className="mt-3 list-disc space-y-2 pl-5">{advice.notes.map(note => <li key={note}>{note}</li>)}</ul>
       </details>

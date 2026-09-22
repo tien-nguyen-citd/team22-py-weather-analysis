@@ -156,11 +156,11 @@ def build_destination_ranking(
             f"{best.name} đứng đầu với {best.candidate.score:.1f}/100 điểm."
         )
     else:
-        top_three = ", ".join(
+        top_two = ", ".join(
             f"{item.name} ({item.candidate.score:.1f}/100)"
-            for item in destinations[:3]
+            for item in destinations[:2]
         )
-        summary = f"{month_label} hợp với {activity.name.lower()} nhất: {top_three}."
+        summary = f"{month_label} hợp với {activity.name.lower()} nhất: {top_two}."
 
     return DestinationRanking(
         month=format_month(month),
