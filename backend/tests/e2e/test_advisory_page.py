@@ -18,10 +18,6 @@ PLACE_QUESTION = "Tháng 12 đi biển ở đâu?"
 @pytest.fixture
 def nlu_requests(page: Page) -> list[dict[str, Any]]:
     requests: list[dict[str, Any]] = []
-    page.route(
-        "**/nlu/health",
-        lambda route: route.fulfill(json={"status": "ok", "extractor": "test"}),
-    )
 
     def understand(route: Route) -> None:
         payload = request_payload(route)
@@ -241,22 +237,31 @@ def test_failed_manual_detection_keeps_the_saved_location(
     expect(page.get_by_role("button", name="Vị trí của tôi: Hà Nội")).to_be_visible()
 
 
-def test_unavailable_nlu_opens_the_manual_form_without_a_back_button(
+def test_unavailable_nlu_keeps_the_chat_and_shows_an_error_after_asking(
     page: Page,
     advisory_requests: list[dict[str, Any]],  # noqa: F811
 ) -> None:
     page.route(
-        "**/nlu/health",
+        "**/nlu/understand",
         lambda route: route.fulfill(
             status=503, json={"detail": "NLU service không khả dụng"}
         ),
     )
     page.goto("/ha-noi/tu-van")
 
+    expect(page.get_by_role("heading", name="Bạn cần tư vấn thời tiết?")).to_be_visible()
+    expect(page.get_by_role("alert")).to_have_count(0)
+
+    page.get_by_label("Câu hỏi của bạn", exact=True).fill(FREE_QUESTION)
+    page.get_by_role("button", name="Gửi câu hỏi", exact=True).click()
+
+    alert = page.get_by_role("alert")
+    expect(alert).to_contain_text("Chưa đọc được câu hỏi")
+    expect(alert).to_contain_text("NLU_SERVICE_OFF")
+    expect(page.get_by_role("heading", name="Bạn cần tư vấn thời tiết?")).to_be_visible()
+
+    page.get_by_role("button", name="Điền form thay vì hỏi", exact=True).click()
     form = page.get_by_role("region", name="Điền tiêu chí tư vấn")
-    expect(form).to_be_visible()
-    expect(page.get_by_role("heading", name="Bạn cần tư vấn thời tiết?")).to_have_count(0)
-    expect(form.get_by_role("button", name="Quay lại hỏi bằng câu")).to_have_count(0)
     expect(form.get_by_label("Địa điểm", exact=True)).to_have_value("ha-noi")
     assert advisory_requests == []
 

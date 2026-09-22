@@ -1,5 +1,5 @@
 import { useState, type FormEvent } from 'react';
-import { Bot, FileText, MessageCircle, Send } from 'lucide-react';
+import { Bot, FileText, MessageCircle, Send, TriangleAlert } from 'lucide-react';
 
 const SAMPLE_QUESTIONS = [
   'Mùa này đi Phú Quốc có hợp không?',
@@ -9,12 +9,14 @@ const SAMPLE_QUESTIONS = [
 
 interface AdvisoryChatBoxProps {
   isAsking: boolean;
+  askFailed: boolean;
   onAsk: (question: string) => void;
   onOpenForm: () => void;
 }
 
 export function AdvisoryChatBox({
   isAsking,
+  askFailed,
   onAsk,
   onOpenForm,
 }: AdvisoryChatBoxProps) {
@@ -76,6 +78,22 @@ export function AdvisoryChatBox({
             placeholder="Ví dụ: tháng nào đi Nha Trang thì ít mưa nhất?"
             className="focus-ring mt-2 block w-full min-w-0 rounded-2xl border border-border bg-tint px-5 py-4 text-[15.5px] text-ink"
           />
+
+          {askFailed && (
+            <p
+              role="alert"
+              className="mt-3 flex items-start gap-2 rounded-xl border border-amber-300 bg-amber-50 px-4 py-3 text-sm leading-relaxed text-amber-900"
+            >
+              <TriangleAlert size={16} className="mt-0.5 shrink-0 text-amber-600" aria-hidden="true" />
+              <span>
+                Chưa đọc được câu hỏi vì dịch vụ hỏi đáp đang gián đoạn. Bạn có thể thử lại sau
+                hoặc điền form để nhận tư vấn ngay.
+                <span className="mt-1 block text-xs text-amber-800">
+                  Mã lỗi: <code className="font-mono">NLU_SERVICE_OFF</code>
+                </span>
+              </span>
+            </p>
+          )}
 
           <div className="mt-4 flex flex-wrap items-center justify-end gap-3">
             <button

@@ -24,11 +24,6 @@ export interface QuestionUnderstanding {
   intent: NluIntent;
 }
 
-export interface NluHealth {
-  status: string;
-  extractor: string;
-}
-
 export function understandQuestion(
   request: UnderstandRequest,
   signal?: AbortSignal,
@@ -38,8 +33,4 @@ export function understandQuestion(
     body: JSON.stringify(request),
     signal,
   });
-}
-
-export function getNluHealth(signal?: AbortSignal): Promise<NluHealth> {
-  return requestJson('/nlu/health', { signal });
 }

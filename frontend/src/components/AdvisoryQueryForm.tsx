@@ -16,7 +16,7 @@ interface AdvisoryQueryFormProps {
   activities: ActivityProfile[];
   initial: AdvisoryQuery;
   onSubmit: (query: AdvisoryQuery) => void;
-  onBackToChat?: () => void;
+  onBackToChat: () => void;
 }
 
 export function AdvisoryQueryForm({
@@ -51,16 +51,14 @@ export function AdvisoryQueryForm({
             Chọn địa điểm, hoạt động và khoảng tháng muốn tìm.
           </p>
         </div>
-        {onBackToChat && (
-          <button
-            type="button"
-            onClick={onBackToChat}
-            className="focus-ring inline-flex items-center gap-2 rounded-xl px-3 py-2 text-sm font-semibold text-acc hover:bg-acc-soft"
-          >
-            <ArrowLeft size={16} aria-hidden="true" />
-            Quay lại hỏi bằng câu
-          </button>
-        )}
+        <button
+          type="button"
+          onClick={onBackToChat}
+          className="focus-ring inline-flex items-center gap-2 rounded-xl px-3 py-2 text-sm font-semibold text-acc hover:bg-acc-soft"
+        >
+          <ArrowLeft size={16} aria-hidden="true" />
+          Quay lại hỏi bằng câu
+        </button>
       </div>
 
       <form className="mt-5" onSubmit={submit} noValidate>

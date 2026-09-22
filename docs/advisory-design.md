@@ -14,10 +14,11 @@ thời điểm ở mức tháng hoặc đầu/giữa/cuối tháng, không dự 
 
 ## Nối với nlu-service
 
-Trang Tư vấn mới kiểm tra `GET /nlu/health` khi tải. Khi dịch vụ sẵn sàng, câu
-hỏi được gửi tới `POST /nlu/understand` cùng vị trí người dùng và ngày tham chiếu
-theo giờ Việt Nam. Nếu không kết nối được dịch vụ hoặc lời gọi thất bại, trang tự
-chuyển sang form nhập tiêu chí và luồng `/api/advisory` vẫn hoạt động bình thường.
+Trang Tư vấn luôn mở khung hỏi đáp khi tải. Câu hỏi được gửi tới
+`POST /nlu/understand` cùng vị trí người dùng và ngày tham chiếu theo giờ Việt Nam.
+Nếu không kết nối được dịch vụ hoặc lời gọi thất bại, khung hỏi đáp vẫn giữ nguyên
+và hiện thông báo lỗi kèm gợi ý điền form. Luồng `/api/advisory` qua form vẫn hoạt
+động bình thường khi dịch vụ NLU gián đoạn.
 
 Kết quả đọc câu hỏi có trường `intent` để giao diện chọn API tư vấn:
 

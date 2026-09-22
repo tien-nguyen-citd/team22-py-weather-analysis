@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { skipToken, useQuery } from '@tanstack/react-query';
 import { LoaderCircle, PencilLine } from 'lucide-react';
 import { getAdvice, getAdvisoryActivities } from '../api/advisory';
-import { getNluHealth, understandQuestion } from '../api/nlu';
+import { understandQuestion } from '../api/nlu';
 import { AdvisoryChatBox } from '../components/AdvisoryChatBox';
 import { AdvisoryPageFooter } from '../components/AdvisoryPageFooter';
 import { AdvisoryQueryForm } from '../components/AdvisoryQueryForm';
@@ -30,6 +30,7 @@ interface AdvisoryPageProps {
 export function AdvisoryPage({ locations, userLocationSlug }: AdvisoryPageProps) {
   const [showForm, setShowForm] = useState(false);
   const [isAsking, setIsAsking] = useState(false);
+  const [askFailed, setAskFailed] = useState(false);
   const [query, setQuery] = useState<AdvisoryQuery | null>(null);
   const [destinationQuery, setDestinationQuery] = useState<DestinationQuery | null>(null);
   const [askedByQuestion, setAskedByQuestion] = useState(false);
@@ -39,12 +40,6 @@ export function AdvisoryPage({ locations, userLocationSlug }: AdvisoryPageProps)
     queryKey: ['advisory', 'activities'],
     queryFn: ({ signal }) => getAdvisoryActivities(signal),
     staleTime: 30 * 60 * 1000,
-    retry: false,
-  });
-  const nluHealth = useQuery({
-    queryKey: ['nlu', 'health'],
-    queryFn: ({ signal }) => getNluHealth(signal),
-    staleTime: Infinity,
     retry: false,
   });
   const advice = useQuery({
@@ -58,6 +53,7 @@ export function AdvisoryPage({ locations, userLocationSlug }: AdvisoryPageProps)
 
   async function ask(question: string) {
     setIsAsking(true);
+    setAskFailed(false);
     try {
       const now = new Date();
       const understood = await understandQuestion({
@@ -80,7 +76,7 @@ export function AdvisoryPage({ locations, userLocationSlug }: AdvisoryPageProps)
       setAskedByQuestion(true);
       setShowForm(false);
     } catch {
-      setShowForm(true);
+      setAskFailed(true);
     } finally {
       setIsAsking(false);
     }
@@ -106,7 +102,7 @@ export function AdvisoryPage({ locations, userLocationSlug }: AdvisoryPageProps)
 
   return (
     <div className="mt-5 space-y-7">
-      {activities.isPending || nluHealth.isPending ? (
+      {activities.isPending ? (
         <p role="status" className="text-sm text-m1">
           Đang tải danh mục hoạt động…
         </p>
@@ -118,7 +114,7 @@ export function AdvisoryPage({ locations, userLocationSlug }: AdvisoryPageProps)
             void activities.refetch();
           }}
         />
-      ) : showForm || !nluHealth.isSuccess ? (
+      ) : showForm ? (
         <AdvisoryQueryForm
           locations={locations}
           activities={activities.data ?? []}
@@ -133,11 +129,12 @@ export function AdvisoryPage({ locations, userLocationSlug }: AdvisoryPageProps)
             }
           }
           onSubmit={runFormQuery}
-          onBackToChat={nluHealth.isSuccess ? () => setShowForm(false) : undefined}
+          onBackToChat={() => setShowForm(false)}
         />
       ) : (
         <AdvisoryChatBox
           isAsking={isAsking}
+          askFailed={askFailed}
           onAsk={question => void ask(question)}
           onOpenForm={() => setShowForm(true)}
         />

@@ -1,5 +1,5 @@
 import { afterEach, expect, it, vi } from 'vitest';
-import { getNluHealth, understandQuestion, type UnderstandRequest } from './nlu';
+import { understandQuestion, type UnderstandRequest } from './nlu';
 
 afterEach(() => vi.unstubAllGlobals());
 
@@ -18,20 +18,6 @@ it('gửi đủ câu hỏi, địa điểm hiện tại, ngày tham chiếu và 
 
   expect(fetchMock).toHaveBeenCalledWith('/nlu/understand', expect.objectContaining({
     method: 'POST', body: JSON.stringify(request), signal: controller.signal,
-  }));
-});
-
-it('gửi tín hiệu hủy khi kiểm tra trạng thái dịch vụ', async () => {
-  const fetchMock = vi.fn(async () => new Response(JSON.stringify({
-    status: 'ok', extractor: 'rule+minilm',
-  })));
-  vi.stubGlobal('fetch', fetchMock);
-  const controller = new AbortController();
-
-  await getNluHealth(controller.signal);
-
-  expect(fetchMock).toHaveBeenCalledWith('/nlu/health', expect.objectContaining({
-    signal: controller.signal,
   }));
 });
 
