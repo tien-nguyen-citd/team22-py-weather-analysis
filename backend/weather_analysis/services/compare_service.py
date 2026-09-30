@@ -10,7 +10,7 @@ from weather_analysis.services.climate_service import (
     ClimateLocation,
     LocationClimate,
     MonthClimate,
-    get_location_climate,
+    get_location_climates,
     to_climate_location,
 )
 from weather_analysis.services.location_service import get_location_by_slug
@@ -45,8 +45,9 @@ def compare_locations(
     location_a = get_location_by_slug(session, slug_a)
     location_b = get_location_by_slug(session, slug_b)
     now = now_factory() if now_factory is not None else datetime.now(VIETNAM_TIMEZONE)
-    climate_a = get_location_climate(session, location_a, client, now.date())
-    climate_b = get_location_climate(session, location_b, client, now.date())
+    climates = get_location_climates(session, [location_a, location_b], client, now.date())
+    climate_a = climates[(location_a.latitude, location_a.longitude)]
+    climate_b = climates[(location_b.latitude, location_b.longitude)]
     current_a = climate_a.months[month - 1]
     current_b = climate_b.months[month - 1]
     return LocationComparison(

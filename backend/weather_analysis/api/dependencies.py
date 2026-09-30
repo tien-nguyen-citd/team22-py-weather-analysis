@@ -52,7 +52,7 @@ def get_temperature_cache() -> MemoryCache[TemperatureCacheKey, dict[str, float]
     return _temperature_cache
 
 
-DbSession = Annotated[Session, Depends(get_session)]
+DbSession = Annotated[Session, Depends(get_session, scope="function")]
 CurrentUsername = Annotated[str, Depends(get_current_username)]
 WeatherClient = Annotated[OpenMeteoClient, Depends(get_open_meteo_client)]
 ForecastCache = Annotated[

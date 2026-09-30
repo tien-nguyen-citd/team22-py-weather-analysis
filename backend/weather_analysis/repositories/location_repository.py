@@ -1,6 +1,7 @@
 from sqlalchemy import delete, func, select
 from sqlalchemy.orm import Session
 
+from weather_analysis.database import acquire_transaction_lock
 from weather_analysis.models import Location
 
 
@@ -28,6 +29,7 @@ class LocationRepository:
         return self._session.scalar(select(func.count()).select_from(Location)) or 0
 
     def replace_all(self, locations: list[Location]) -> None:
+        acquire_transaction_lock(self._session, "weather:locations")
         self._session.execute(delete(Location))
         self._session.add_all(locations)
         self._session.flush()

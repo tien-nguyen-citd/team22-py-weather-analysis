@@ -80,7 +80,7 @@ export const NangMuaApp: React.FC = () => {
   } = useQuery({
     queryKey: ['weather', currentLocation?.slug],
     queryFn: currentLocation
-      ? () => getForecast(currentLocation.slug)
+      ? ({ signal }) => getForecast(currentLocation.slug, signal)
       : skipToken,
     staleTime: 30 * 60 * 1000,
     retry: 1,

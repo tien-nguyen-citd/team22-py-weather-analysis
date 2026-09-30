@@ -54,6 +54,39 @@ def session_scope() -> Iterator[Session]:
         session.close()
 
 
+class TransactionLockError(RuntimeError):
+    """Không thể khóa tài nguyên để hoàn tất giao dịch an toàn."""
+
+
+def acquire_transaction_lock(session: Session, resource: str) -> None:
+    """Khóa tài nguyên trên SQL Server cho đến khi transaction commit hoặc rollback."""
+    result = session.scalar(
+        text(
+            """
+            SET NOCOUNT ON;
+            DECLARE @lock_result int;
+            EXEC @lock_result = sys.sp_getapplock
+                @Resource = :resource,
+                @LockMode = 'Exclusive',
+                @LockOwner = 'Transaction',
+                @LockTimeout = -1;
+            SELECT @lock_result;
+            """
+        ),
+        {"resource": resource},
+    )
+    if result is None or result < 0:
+        raise TransactionLockError(f"Không thể khóa giao dịch {resource}: {result}")
+
+
+@contextmanager
+def database_initialization_lock() -> Iterator[None]:
+    """Chỉ một worker được chạy migration và seed tại một thời điểm."""
+    with session_scope() as session:
+        acquire_transaction_lock(session, "weather:initialize")
+        yield
+
+
 def ensure_database_exists() -> None:
     """Tạo hoặc attach database LocalDB khi dùng cấu hình mặc định."""
     if os.environ.get("WEATHER_DB_URL"):
@@ -88,17 +121,46 @@ def ensure_database_exists() -> None:
     )
     try:
         with master_engine.connect() as connection:
-            connection.execute(
+            lock_resource = f"weather:create-database:{database_name}"
+            lock_result = connection.scalar(
                 text(
-                    f"""
-                    IF DB_ID(:database_name) IS NULL
-                    BEGIN
-                        {create_statement}
-                    END
+                    """
+                    SET NOCOUNT ON;
+                    DECLARE @lock_result int;
+                    EXEC @lock_result = sys.sp_getapplock
+                        @Resource = :resource,
+                        @LockMode = 'Exclusive',
+                        @LockOwner = 'Session',
+                        @LockTimeout = -1;
+                    SELECT @lock_result;
                     """
                 ),
-                {"database_name": database_name},
+                {"resource": lock_resource},
             )
+            if lock_result is None or lock_result < 0:
+                raise TransactionLockError(
+                    f"Không thể khóa tạo database {database_name}: {lock_result}"
+                )
+            try:
+                connection.execute(
+                    text(
+                        f"""
+                        IF DB_ID(:database_name) IS NULL
+                        BEGIN
+                            {create_statement}
+                        END
+                        """
+                    ),
+                    {"database_name": database_name},
+                )
+            finally:
+                connection.execute(
+                    text(
+                        "EXEC sys.sp_releaseapplock "
+                        "@Resource = :resource, @LockOwner = 'Session'"
+                    ),
+                    {"resource": lock_resource},
+                )
     finally:
         master_engine.dispose()
 

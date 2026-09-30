@@ -1,4 +1,7 @@
+from concurrent.futures import ThreadPoolExecutor
 from datetime import timedelta
+from threading import Barrier, Event, Lock
+from time import sleep
 
 import pytest
 
@@ -50,3 +53,35 @@ def test_cache_does_not_store_factory_error() -> None:
 
     assert cache.get_or_create("key", factory, timedelta(minutes=1)) == "thành công"
     assert calls == 2
+
+
+def test_concurrent_requests_for_same_key_share_one_fetch() -> None:
+    cache: MemoryCache[str, str] = MemoryCache()
+    barrier = Barrier(8)
+    factory_started = Event()
+    release_factory = Event()
+    calls_lock = Lock()
+    calls = 0
+
+    def factory() -> str:
+        nonlocal calls
+        with calls_lock:
+            calls += 1
+        factory_started.set()
+        assert release_factory.wait(timeout=5)
+        return "dữ liệu"
+
+    def get_value() -> str:
+        barrier.wait(timeout=5)
+        return cache.get_or_create("key", factory, timedelta(minutes=1))
+
+    with ThreadPoolExecutor(max_workers=8) as executor:
+        futures = [executor.submit(get_value) for _ in range(8)]
+        try:
+            assert factory_started.wait(timeout=5)
+            sleep(0.05)
+        finally:
+            release_factory.set()
+        assert [future.result(timeout=5) for future in futures] == ["dữ liệu"] * 8
+
+    assert calls == 1

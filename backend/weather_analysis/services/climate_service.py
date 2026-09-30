@@ -6,6 +6,7 @@ from typing import Protocol
 from sqlalchemy.orm import Session
 
 from weather_analysis.clients.open_meteo_client import OpenMeteoArchive
+from weather_analysis.database import acquire_transaction_lock
 from weather_analysis.models import DailyWeather, Location
 from weather_analysis.repositories.daily_weather_repository import (
     DailyWeatherRepository,
@@ -114,6 +115,9 @@ def get_location_climate(
     today: date,
 ) -> LocationClimate:
     period = calculate_climate_period(today)
+    acquire_transaction_lock(
+        session, f"weather:climate:{location.latitude!r}:{location.longitude!r}"
+    )
     repository = DailyWeatherRepository(session)
     minimum, maximum = repository.get_date_bounds(location.latitude, location.longitude)
 
@@ -150,6 +154,24 @@ def get_location_climate(
         period.end_date,
     )
     return _build_location_climate(period, aggregates)
+
+
+def get_location_climates(
+    session: Session,
+    locations: list[Location],
+    client: ClimateClient,
+    today: date,
+) -> dict[tuple[float, float], LocationClimate]:
+    """Nạp nhiều tọa độ theo cùng một thứ tự khóa để tránh deadlock."""
+    by_coordinates = {
+        (location.latitude, location.longitude): location for location in locations
+    }
+    return {
+        coordinates: get_location_climate(
+            session, by_coordinates[coordinates], client, today
+        )
+        for coordinates in sorted(by_coordinates)
+    }
 
 
 def _fetch_and_store(

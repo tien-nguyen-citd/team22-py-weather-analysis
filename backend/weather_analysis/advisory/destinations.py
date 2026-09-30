@@ -20,13 +20,14 @@ from weather_analysis.advisory.scoring import (
     score_candidates,
 )
 from weather_analysis.advisory.service import ADVICE_NOTES
+from weather_analysis.models import Location
 from weather_analysis.repositories.location_repository import LocationRepository
 from weather_analysis.services.climate_service import (
     ClimateClient,
     ClimateDataError,
     ClimatePeriod,
     calculate_climate_period,
-    get_location_climate,
+    get_location_climates,
 )
 
 
@@ -86,12 +87,15 @@ def get_destination_ranking(
     if activity.id == "beach":
         catalog = tuple(destination for destination in catalog if destination.coastal)
 
-    histories: list[DestinationHistory] = []
+    locations: list[Location] = []
     for destination in catalog:
         location = LocationRepository(session).find_by_slug(destination.slug)
-        if location is None:
-            continue
-        get_location_climate(session, location, client, today)
+        if location is not None:
+            locations.append(location)
+
+    get_location_climates(session, locations, client, today)
+    histories: list[DestinationHistory] = []
+    for location in locations:
         days = AdvisoryWeatherRepository(session).read_days(
             location.latitude,
             location.longitude,

@@ -13,6 +13,7 @@ from weather_analysis.api.forecast_routes import router as forecast_router
 from weather_analysis.api.location_routes import router as location_router
 from weather_analysis.config import get_session_secret
 from weather_analysis.database import (
+    database_initialization_lock,
     ensure_database_exists,
     session_scope,
     upgrade_database,
@@ -23,9 +24,10 @@ from weather_analysis.seed import seed_all
 @asynccontextmanager
 async def lifespan(_app: FastAPI) -> AsyncIterator[None]:
     ensure_database_exists()
-    upgrade_database()
-    with session_scope() as session:
-        seed_all(session)
+    with database_initialization_lock():
+        upgrade_database()
+        with session_scope() as session:
+            seed_all(session)
     yield
 
 

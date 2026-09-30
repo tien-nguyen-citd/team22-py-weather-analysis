@@ -4,6 +4,8 @@ from pathlib import Path
 from sqlalchemy.orm import Session
 
 from weather_analysis.database import (
+    acquire_transaction_lock,
+    database_initialization_lock,
     ensure_database_exists,
     session_scope,
     upgrade_database,
@@ -35,12 +37,14 @@ def load_users(path: Path) -> list[tuple[str, str]]:
 
 def seed_locations(session: Session) -> None:
     """Nạp địa điểm mẫu khi bảng chưa có dữ liệu."""
+    acquire_transaction_lock(session, "weather:locations")
     if LocationRepository(session).count() == 0:
         import_locations_with_aliases(session, LOCATIONS_SEED_PATH.read_bytes())
 
 
 def seed_all(session: Session) -> None:
     """Tạo dữ liệu mẫu theo cách lặp lại an toàn."""
+    acquire_transaction_lock(session, "weather:seed")
     user_repository = UserRepository(session)
     for username, password in load_users(DEFAULT_USERS_PATH):
         if user_repository.find_by_username(username) is None:
@@ -51,9 +55,10 @@ def seed_all(session: Session) -> None:
 def main() -> None:
     """Khởi tạo schema và dữ liệu mẫu cho cơ sở dữ liệu."""
     ensure_database_exists()
-    upgrade_database()
-    with session_scope() as session:
-        seed_all(session)
+    with database_initialization_lock():
+        upgrade_database()
+        with session_scope() as session:
+            seed_all(session)
 
 
 if __name__ == "__main__":

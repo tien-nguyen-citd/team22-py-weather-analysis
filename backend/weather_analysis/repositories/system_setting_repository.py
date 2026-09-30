@@ -3,6 +3,7 @@ from datetime import datetime, timezone
 from sqlalchemy import delete, select
 from sqlalchemy.orm import Session
 
+from weather_analysis.database import acquire_transaction_lock
 from weather_analysis.models import SystemSetting
 
 
@@ -16,6 +17,7 @@ class SystemSettingRepository:
         )
 
     def save(self, key: str, value: str) -> SystemSetting:
+        acquire_transaction_lock(self._session, f"weather:setting:{key}")
         setting = self.find_by_key(key)
         if setting is None:
             setting = SystemSetting(key=key, value=value)
@@ -27,6 +29,7 @@ class SystemSettingRepository:
         return setting
 
     def delete(self, key: str) -> None:
+        acquire_transaction_lock(self._session, f"weather:setting:{key}")
         self._session.execute(
             delete(SystemSetting).where(SystemSetting.key == key)
         )

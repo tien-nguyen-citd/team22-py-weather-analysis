@@ -78,8 +78,9 @@ export interface LocationForecast {
   activities: ActivityWindowItem[]
 }
 
-export function getForecast(slug: string): Promise<LocationForecast> {
+export function getForecast(slug: string, signal?: AbortSignal): Promise<LocationForecast> {
   return requestJson<LocationForecast>(
     `/api/locations/${encodeURIComponent(slug)}/forecast`,
+    { signal },
   )
 }
